@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
     Trash2,
     User,
-    Settings,
     X,
     ChevronRight,
     ChevronLeft,
@@ -11,7 +10,12 @@ import {
     ArrowLeft,
     ArrowUpRight,
     RotateCw,
-    RefreshCcw
+    RefreshCcw,
+    Pencil,
+    Eraser,
+    Undo,
+    Minus,
+    MoreHorizontal
 } from 'lucide-react';
 import { useDrill } from '@/context/DrillContext';
 
@@ -30,6 +34,13 @@ interface PitchElement {
     icon?: string;
     variant?: string;
     dashed?: boolean;
+}
+
+interface DrawingPath {
+    id: number;
+    points: { x: number, y: number }[];
+    color: string;
+    dashed: boolean;
 }
 
 const COLORS = [
@@ -79,6 +90,14 @@ const DrillDesignerPage = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'players' | 'equipment' | 'shapes'>('players');
     const [selectedColor, setSelectedColor] = useState(COLORS[0].value);
+
+    // Drawing State
+    const [isDrawingMode, setIsDrawingMode] = useState(false);
+    const [paths, setPaths] = useState<DrawingPath[]>([]);
+    const [currentPath, setCurrentPath] = useState<{ x: number, y: number }[]>([]);
+    const [drawingColor, setDrawingColor] = useState('#ffffff');
+    const [isDashed, setIsDashed] = useState(false);
+
     const pitchRef = useRef<HTMLDivElement>(null);
 
     // Load existing elements
@@ -103,10 +122,27 @@ const DrillDesignerPage = () => {
 
     const handleSave = () => {
         if (stepId) {
-            updateStep(stepId, { canvasData: { elements } });
+            // Save paths as well? For now just elements, unless we extend the schema.
+            // Ideally we'd save paths to canvasData too.
+            updateStep(stepId, { canvasData: { elements, paths } });
             alert('Saved!');
         }
+        if (stepId) {
+            // Save paths as well? For now just elements, unless we extend the schema.
+            // Ideally we'd save paths to canvasData too.
+            updateStep(stepId, { canvasData: { elements, paths } });
+            alert('Saved!');
+            navigate('/drill-steps');
+        }
     };
+
+    // Load paths if they exist
+    useEffect(() => {
+        if (currentStep?.canvasData?.paths) {
+            // Assuming canvasData type includes paths now, if not we might need to cast or update type def elsewhere.
+            setPaths(currentStep.canvasData.paths);
+        }
+    }, [currentStep]);
 
     // Handle adding elements via click/drag
     const addElementToPitch = (asset: any, clientX: number, clientY: number) => {
@@ -179,6 +215,51 @@ const DrillDesignerPage = () => {
                     : el
             ));
         }
+    };
+
+    // Drawing Handlers
+    const handleDrawStart = (e: any) => {
+        if (!isDrawingMode || !pitchRef.current) return;
+        e.preventDefault();
+        e.stopPropagation(); // Stop from dragging pitch/elements
+
+        const rect = pitchRef.current.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const x = ((clientX - rect.left) / rect.width) * 100;
+        const y = ((clientY - rect.top) / rect.height) * 100;
+
+        setCurrentPath([{ x, y }]);
+    };
+
+    const handleDrawMove = (e: any) => {
+        if (!isDrawingMode || currentPath.length === 0 || !pitchRef.current) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const rect = pitchRef.current.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+        const x = ((clientX - rect.left) / rect.width) * 100;
+        const y = ((clientY - rect.top) / rect.height) * 100;
+
+        setCurrentPath(prev => [...prev, { x, y }]);
+    };
+
+    const handleDrawEnd = () => {
+        if (!isDrawingMode || currentPath.length === 0) return;
+
+        const newPath: DrawingPath = {
+            id: Date.now(),
+            points: currentPath,
+            color: drawingColor,
+            dashed: isDashed
+        };
+
+        setPaths(prev => [...prev, newPath]);
+        setCurrentPath([]);
     };
 
     // Interaction Handlers
@@ -450,11 +531,7 @@ const DrillDesignerPage = () => {
                     </button>
                 </div>
 
-                {/* Grass Pattern */}
-                <div
-                    className="absolute inset-0 opacity-20 pointer-events-auto"
-                    data-pitch-background="true"
-                    style={{ background: 'repeating-linear-gradient(90deg, #000, #000 10%, transparent 10%, transparent 20%)' }}></div>
+
 
                 {/* Pitch Lines Wrapper */}
                 <div
@@ -464,6 +541,11 @@ const DrillDesignerPage = () => {
                     data-pitch-background="true"
                     className="relative w-full min-h-[800px] border-4 border-white/40 m-auto flex flex-col pointer-events-auto"
                 >
+                    {/* Grass Pattern */}
+                    <div
+                        className="absolute inset-0 opacity-20 pointer-events-auto"
+                        data-pitch-background="true"
+                        style={{ background: 'repeating-linear-gradient(90deg, #000, #000 10%, transparent 10%, transparent 20%)' }}></div>
                     {/* Top Goal Area */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-[10%] border-b-4 border-x-4 border-white/40 rounded-b-sm pointer-events-none">
                         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1/2 border-b-4 border-x-4 border-white/40"></div>
@@ -489,6 +571,49 @@ const DrillDesignerPage = () => {
                     <div className="absolute top-0 right-0 w-8 h-8 border-l-4 border-b-4 border-white/40 rounded-bl-full pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 w-8 h-8 border-r-4 border-t-4 border-white/40 rounded-tr-full pointer-events-none"></div>
                     <div className="absolute bottom-0 right-0 w-8 h-8 border-l-4 border-t-4 border-white/40 rounded-tl-full pointer-events-none"></div>
+
+                    {/* Drawing Overlay (High Z-Index) */}
+                    <div className="absolute inset-0 z-[160] pointer-events-none">
+                        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            {paths.map(path => (
+                                <polyline
+                                    key={path.id}
+                                    points={path.points.map(p => `${p.x},${p.y}`).join(' ')}
+                                    fill="none"
+                                    stroke={path.color}
+                                    strokeWidth="0.5"
+                                    strokeDasharray={path.dashed ? "1,1" : "none"}
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            ))}
+                            {currentPath.length > 0 && (
+                                <polyline
+                                    points={currentPath.map(p => `${p.x},${p.y}`).join(' ')}
+                                    fill="none"
+                                    stroke={drawingColor}
+                                    strokeWidth="0.5"
+                                    strokeDasharray={isDashed ? "1,1" : "none"}
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                            )}
+                        </svg>
+                    </div>
+
+                    {/* Drawing Interaction Layer (Active only in Drawing Mode) */}
+                    {isDrawingMode && (
+                        <div
+                            className="absolute inset-0 z-[170] cursor-crosshair touch-none"
+                            onMouseDown={handleDrawStart}
+                            onMouseMove={handleDrawMove}
+                            onMouseUp={handleDrawEnd}
+                            onMouseLeave={handleDrawEnd}
+                            onTouchStart={handleDrawStart}
+                            onTouchMove={handleDrawMove}
+                            onTouchEnd={handleDrawEnd}
+                        />
+                    )}
 
                     {/* Draggable Elements Layer */}
                     <div className="absolute inset-0 pointer-events-none">
@@ -670,9 +795,67 @@ const DrillDesignerPage = () => {
             </main>
 
             {/* Floating Action Bar */}
-            <div className="fixed bottom-6 right-6 flex flex-col gap-3">
-                <button className="bg-white/10 backdrop-blur-md p-4 rounded-full border border-white/20 text-white shadow-2xl active:scale-90 transition-transform">
-                    <Settings size={24} />
+            <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-[200]">
+                {/* Drawing Toolbar */}
+                {isDrawingMode && (
+                    <div className="bg-slate-800/90 backdrop-blur-md p-3 rounded-2xl border border-white/10 shadow-2xl flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 mb-2">
+                        {/* Colors */}
+                        <div className="flex gap-2">
+                            {COLORS.map(c => (
+                                <button
+                                    key={c.id}
+                                    onClick={() => setDrawingColor(c.value)}
+                                    className={`w-6 h-6 rounded-full border-2 transition-transform ${drawingColor === c.value ? 'border-white scale-125' : 'border-transparent'}`}
+                                    style={{ backgroundColor: c.value }}
+                                />
+                            ))}
+                        </div>
+                        {/* Tools */}
+                        <div className="flex justify-between items-center border-t border-white/10 pt-2">
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setIsDashed(false)}
+                                    className={`p-2 rounded-lg ${!isDashed ? 'bg-white/20 text-white' : 'text-slate-400 hover:bg-white/10'}`}
+                                    title="Solid Line"
+                                >
+                                    <Minus size={16} />
+                                </button>
+                                <button
+                                    onClick={() => setIsDashed(true)}
+                                    className={`p-2 rounded-lg ${isDashed ? 'bg-white/20 text-white' : 'text-slate-400 hover:bg-white/10'}`}
+                                    title="Dashed Line"
+                                >
+                                    <MoreHorizontal size={16} />
+                                </button>
+                            </div>
+
+                            <div className="h-4 w-px bg-white/20 mx-2"></div>
+
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setPaths(prev => prev.slice(0, -1))}
+                                    className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg"
+                                    title="Undo"
+                                >
+                                    <Undo size={16} />
+                                </button>
+                                <button
+                                    onClick={() => setPaths([])}
+                                    className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg"
+                                    title="Clear All Drawings"
+                                >
+                                    <Eraser size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <button
+                    onClick={() => setIsDrawingMode(!isDrawingMode)}
+                    className={`p-4 rounded-full border border-white/20 text-white shadow-2xl active:scale-90 transition-all ${isDrawingMode ? 'bg-emerald-600 border-emerald-400' : 'bg-white/10 backdrop-blur-md'}`}
+                >
+                    <Pencil size={24} />
                 </button>
                 <button
                     onClick={handleSave}
