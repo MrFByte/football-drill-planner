@@ -54,8 +54,8 @@ const COLORS = [
 
 const ASSETS = {
     players: [
-        { id: 'player', type: 'player', label: 'Player', width: 5, height: 5 },
-        { id: 'gk', type: 'player', label: 'GK', isGK: true, width: 5, height: 5 },
+        { id: 'player', type: 'player', label: 'Player', width: 5, height: 4 },
+        { id: 'gk', type: 'player', label: 'GK', isGK: true, width: 5, height: 4 },
     ],
     equipment: [
         { id: 'ball', type: 'icon', icon: '⚽', label: 'Ball', fixedColor: true, width: 4, height: 4 },
