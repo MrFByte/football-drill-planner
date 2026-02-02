@@ -29,12 +29,6 @@ export default function DrillStepsListPage() {
                     </div>
                 </div>
 
-                {/* Drill Info */}
-                <div className="mb-6 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 p-6 shadow-xl">
-                    <h2 className="mb-2 text-sm font-semibold text-slate-400">Objective</h2>
-                    <p className="text-white">{currentDrill.objective}</p>
-                </div>
-
                 {/* Steps List */}
                 <div className="mb-6">
                     <h2 className="mb-4 text-lg font-bold text-white">
@@ -61,7 +55,7 @@ export default function DrillStepsListPage() {
                                         <div className="flex-1">
                                             <h3 className="font-semibold text-white">{step.title}</h3>
                                             <p className="text-sm text-slate-400">
-                                                {step.fieldType} • {step.fieldWidth}m × {step.fieldLength}m
+                                                {step.groundType} Ground • {step.fieldMeasurement === 'default' ? 'Default' : 'Custom'} Field
                                             </p>
                                         </div>
                                         <button

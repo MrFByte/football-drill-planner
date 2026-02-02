@@ -26,7 +26,7 @@ export default function DrillCategoriesPage() {
             <div className="mx-auto max-w-md px-4 py-8">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="mb-2 text-3xl font-bold text-white">My Drills</h1>
+                    <h1 className="mb-2 text-3xl font-bold text-white">Sessions List</h1>
                     <p className="text-slate-400">Manage your training sessions</p>
                 </div>
 
@@ -62,7 +62,6 @@ export default function DrillCategoriesPage() {
                                         <Calendar size={12} />
                                         <span>{drill.date}</span>
                                     </div>
-                                    <p className="text-sm text-slate-400 line-clamp-2">{drill.objective}</p>
                                 </div>
                                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button
@@ -76,12 +75,6 @@ export default function DrillCategoriesPage() {
                             </div>
 
                             <div className="mt-4 flex gap-2">
-                                <span className="text-[10px] bg-slate-900 px-2 py-1 rounded border border-slate-700 text-slate-400 uppercase tracking-wide">
-                                    {drill.fieldType} Field
-                                </span>
-                                <span className="text-[10px] bg-slate-900 px-2 py-1 rounded border border-slate-700 text-slate-400 uppercase tracking-wide">
-                                    {drill.groundSize} Ground
-                                </span>
                                 <span className="text-[10px] bg-emerald-900/30 text-emerald-400 px-2 py-1 rounded border border-emerald-500/20 uppercase tracking-wide ml-auto">
                                     {drill.steps.length} Steps
                                 </span>

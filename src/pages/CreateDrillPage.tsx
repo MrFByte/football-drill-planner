@@ -4,8 +4,6 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import { useDrill } from "@/context/DrillContext"
 
 export default function CreateDrillPage() {
@@ -14,27 +12,7 @@ export default function CreateDrillPage() {
 
     const [title, setTitle] = useState("")
     const [date, setDate] = useState(new Date().toISOString().split('T')[0])
-    const [objective, setObjective] = useState("")
-    const [fieldType, setFieldType] = useState<'full' | 'half' | '7v7'>('full')
-    const [groundSize, setGroundSize] = useState<'whole' | 'half'>('whole')
-    const [fieldWidth, setFieldWidth] = useState("68")
-    const [fieldLength, setFieldLength] = useState("105")
     const [errors, setErrors] = useState<{ [key: string]: string }>({})
-
-    // Update default dimensions based on field type
-    const handleFieldTypeChange = (type: 'full' | 'half' | '7v7') => {
-        setFieldType(type)
-        if (type === 'full') {
-            setFieldWidth("68")
-            setFieldLength("105")
-        } else if (type === 'half') {
-            setFieldWidth("68")
-            setFieldLength("52.5")
-        } else if (type === '7v7') {
-            setFieldWidth("50")
-            setFieldLength("70")
-        }
-    }
 
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {}
@@ -44,9 +22,6 @@ export default function CreateDrillPage() {
         }
         if (!date) {
             newErrors.date = "Date is required"
-        }
-        if (!objective.trim()) {
-            newErrors.objective = "Objective is required"
         }
 
         setErrors(newErrors)
@@ -61,11 +36,6 @@ export default function CreateDrillPage() {
                 id: Date.now().toString(),
                 title,
                 date,
-                objective,
-                fieldType,
-                groundSize,
-                fieldWidth: parseFloat(fieldWidth),
-                fieldLength: parseFloat(fieldLength),
                 steps: []
             }
 
@@ -118,46 +88,6 @@ export default function CreateDrillPage() {
                         />
                         {errors.date && (
                             <p className="text-sm text-red-400">{errors.date}</p>
-                        )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="fieldType">Field Type *</Label>
-                            <Select
-                                id="fieldType"
-                                value={fieldType}
-                                onChange={(e) => handleFieldTypeChange(e.target.value as 'full' | 'half' | '7v7')}
-                            >
-                                <option value="full">Full Field</option>
-                                <option value="half">Half Field</option>
-                                <option value="7v7">7v7 Field</option>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="groundSize">Ground Size *</Label>
-                            <Select
-                                id="groundSize"
-                                value={groundSize}
-                                onChange={(e) => setGroundSize(e.target.value as 'whole' | 'half')}
-                            >
-                                <option value="whole">Whole Ground</option>
-                                <option value="half">Half Ground</option>
-                            </Select>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="objective">Objective *</Label>
-                        <Textarea
-                            id="objective"
-                            value={objective}
-                            onChange={(e) => setObjective(e.target.value)}
-                            placeholder="Describe the main objective of this drill..."
-                            className={errors.objective ? "border-red-500" : ""}
-                        />
-                        {errors.objective && (
-                            <p className="text-sm text-red-400">{errors.objective}</p>
                         )}
                     </div>
 

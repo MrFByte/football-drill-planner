@@ -4,12 +4,6 @@ export interface Drill {
     id: string
     title: string
     date: string
-    objective: string
-    category?: string
-    fieldType?: 'full' | 'half' | '7v7'
-    groundSize?: 'whole' | 'half'
-    fieldWidth?: number
-    fieldLength?: number
     steps: DrillStep[]
 }
 
@@ -17,11 +11,12 @@ export interface DrillStep {
     id: string
     title: string
     objective?: string
-    // Legacy fields kept for compatibility if needed, but will be derived from drill or unused
-    fieldType?: 'full' | 'half' | '7v7'
-    groundSize?: 'whole' | 'half'
-    fieldWidth?: number
-    fieldLength?: number
+    groundType: 'full' | 'half'
+    fieldType: '7v7' | '11v11'
+    fieldMeasurement: 'default' | 'custom'
+    unit?: 'yard' | 'meter'
+    width?: number
+    height?: number
     canvasData?: any // Will store data (elements, positions)
 }
 
