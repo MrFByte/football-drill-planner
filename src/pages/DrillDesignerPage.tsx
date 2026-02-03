@@ -372,8 +372,9 @@ const DrillDesignerPage = () => {
                 </div>
             </header>
 
-            {/* ========== FIELD (60%) ========== */}
-            <main className="h-[60vh] bg-[#121212] flex items-center justify-center p-2 relative shrink-0">
+            {/* ========== FIELD (60% in edit, 95% in view) ========== */}
+            <main className={`bg-[#121212] flex items-center justify-center p-2 relative shrink-0 ${isViewMode ? 'h-[95vh]' : 'h-[60vh]'
+                }`}>
                 {/* Pitch Container */}
                 <div
                     ref={pitchRef}
@@ -422,7 +423,8 @@ const DrillDesignerPage = () => {
                             setDeleteMode(false);
                         }
                     }}
-                    className="relative h-full aspect-[2/3] max-w-full bg-[#2e7d32] shadow-2xl border-[3px] border-[#388e3c] overflow-hidden rounded-md"
+                    className={`relative h-full aspect-[2/3] max-w-full bg-[#2e7d32] shadow-2xl border-[3px] border-[#388e3c] overflow-hidden rounded-md transition-transform duration-300 ${isViewMode ? 'scale-110' : ''
+                        }`}
                 >
                     {/* Grass Stripes */}
                     <div className="absolute inset-0 flex flex-col opacity-30 pointer-events-none">
