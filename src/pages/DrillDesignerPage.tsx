@@ -58,9 +58,9 @@ const ASSETS = {
         { id: 'circle-empty', type: 'marker' as const, variant: 'circle', label: 'Circle', width: 5, height: 4 },
     ],
     equipment: [
-        { id: 'ball', type: 'icon' as const, icon: '⚽', label: 'Ball', fixedColor: true, width: 4, height: 4 },
+        { id: 'ball', type: 'icon' as const, icon: '⚽', label: 'Ball', fixedColor: true, width: 0.25, height: 0.25 },
         { id: 'cone', type: 'equipment' as const, variant: 'cone', label: 'Cone', width: 4, height: 4 },
-        { id: 'pole', type: 'equipment' as const, variant: 'pole', label: 'Pole', width: 2, height: 4 },
+        { id: 'pole', type: 'equipment' as const, variant: 'pole', label: 'Flag', width: 3, height: 4 },
         { id: 'hurdle', type: 'equipment' as const, variant: 'hurdle', label: 'Hurdle', width: 6, height: 4 },
         { id: 'minigoal', type: 'equipment' as const, variant: 'minigoal', label: 'Goal', width: 10, height: 6 },
         { id: 'ladder', type: 'equipment' as const, variant: 'ladder', label: 'Ladder', width: 15, height: 5 },
@@ -106,6 +106,7 @@ const DrillDesignerPage = () => {
 
     // Interaction modes
     const [moveMode, setMoveMode] = useState(false);
+    const [isViewMode, setIsViewMode] = useState(false);
     const [deleteMode, setDeleteMode] = useState(false);
 
     const pitchRef = useRef<HTMLDivElement>(null);
@@ -348,6 +349,15 @@ const DrillDesignerPage = () => {
                         >
                             Undo
                         </button>
+                        <button
+                            onClick={() => setIsViewMode(!isViewMode)}
+                            className={`flex items-center justify-center px-4 h-full rounded-sm transition-colors text-[10px] font-medium uppercase tracking-wide ${isViewMode
+                                ? 'bg-blue-600 text-white hover:bg-blue-500'
+                                : 'text-zinc-300 hover:text-white hover:bg-white/5'
+                                }`}
+                        >
+                            {isViewMode ? 'Edit' : 'View'}
+                        </button>
                     </div>
                 </div>
 
@@ -537,25 +547,30 @@ const DrillDesignerPage = () => {
 
                                 {/* Render Icon (Ball) */}
                                 {el.type === 'icon' && (
-                                    <span className="text-3xl">{el.icon}</span>
+                                    <span className="text-xs">{el.icon}</span>
                                 )}
 
                                 {/* Render Equipment */}
                                 {el.type === 'equipment' && (
                                     <div className="w-full h-full flex items-center justify-center">
                                         {el.variant === 'cone' && (
-                                            <svg viewBox="0 0 24 24" className="w-full h-full drop-shadow-md" style={{ fill: el.color }}>
-                                                <path d="M12 2 L2 22 L22 22 Z" />
+                                            <svg viewBox="0 0 64 64" className="w-full h-full drop-shadow-md">
+                                                {/* Base */}
+                                                <polygon points="12,52 52,52 52,60 12,60" fill="#ff7a00" />
+                                                {/* Cone body */}
+                                                <polygon points="32,6 48,52 16,52" fill="#ff8c1a" />
+                                                {/* Highlight */}
+                                                <polygon points="32,10 38,52 30,52" fill="#ffa64d" opacity="0.9" />
                                             </svg>
                                         )}
                                         {el.variant === 'marker' && (
                                             <div className="w-full h-full rounded-full shadow-md border-2 border-black/10" style={{ backgroundColor: el.color }}></div>
                                         )}
                                         {el.variant === 'pole' && (
-                                            <div className="flex flex-col items-center justify-end h-full">
-                                                <div className="w-1/4 h-5/6 bg-slate-200"></div>
-                                                <div className="w-full aspect-square rounded-full shadow-sm" style={{ backgroundColor: el.color }}></div>
-                                            </div>
+                                            <svg viewBox="0 0 16 16" className="w-full h-full" fill={el.color}>
+                                                <rect x="1" y="0" width="1" height="16" fill="#666" />
+                                                <path d="M 2 1 L 10 3 L 2 5 Z" />
+                                            </svg>
                                         )}
                                         {el.variant === 'hurdle' && (
                                             <div className="w-full h-2/3 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: el.color }}></div>
@@ -670,65 +685,110 @@ const DrillDesignerPage = () => {
                                 }
 
                                 pathElement = (
-                                    <path
-                                        key={line.instanceId}
-                                        d={pathData}
-                                        fill="none"
-                                        stroke="#000000"
-                                        strokeWidth={isSelected ? "4" : "3"}
-                                        markerEnd="url(#arrowhead-line)"
-                                        className="pointer-events-auto cursor-pointer"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (deleteMode) {
-                                                handleDeleteElement(line.instanceId);
-                                            } else {
-                                                setSelectedId(line.instanceId);
-                                            }
-                                        }}
-                                    />
+                                    <>
+                                        {/* Invisible wider stroke for better click detection */}
+                                        <path
+                                            key={`${line.instanceId}-hitarea`}
+                                            d={pathData}
+                                            fill="none"
+                                            stroke="transparent"
+                                            strokeWidth="15"
+                                            className="pointer-events-auto cursor-pointer"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (deleteMode) {
+                                                    handleDeleteElement(line.instanceId);
+                                                } else {
+                                                    setSelectedId(line.instanceId);
+                                                }
+                                            }}
+                                        />
+                                        {/* Visible path */}
+                                        <path
+                                            key={line.instanceId}
+                                            d={pathData}
+                                            fill="none"
+                                            stroke="#000000"
+                                            strokeWidth={isSelected ? "4" : "3"}
+                                            markerEnd="url(#arrowhead-line)"
+                                            className="pointer-events-none"
+                                        />
+                                    </>
                                 );
                             } else if (line.drawMode === 'freehand') {
                                 // Smooth curve for freehand
                                 const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
                                 pathElement = (
-                                    <path
-                                        key={line.instanceId}
-                                        d={pathData}
-                                        fill="none"
-                                        stroke="#000000"
-                                        strokeWidth={isSelected ? "4" : "3"}
-                                        strokeDasharray={line.lineStyle === 'dotted' ? '5,5' : 'none'}
-                                        markerEnd="url(#arrowhead-line)"
-                                        className="pointer-events-auto cursor-pointer"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (deleteMode) {
-                                                handleDeleteElement(line.instanceId);
-                                            } else {
-                                                setSelectedId(line.instanceId);
-                                            }
-                                        }}
-                                    />
+                                    <>
+                                        {/* Invisible wider stroke for better click detection */}
+                                        <path
+                                            key={`${line.instanceId}-hitarea`}
+                                            d={pathData}
+                                            fill="none"
+                                            stroke="transparent"
+                                            strokeWidth="15"
+                                            className="pointer-events-auto cursor-pointer"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (deleteMode) {
+                                                    handleDeleteElement(line.instanceId);
+                                                } else {
+                                                    setSelectedId(line.instanceId);
+                                                }
+                                            }}
+                                        />
+                                        {/* Visible path */}
+                                        <path
+                                            key={line.instanceId}
+                                            d={pathData}
+                                            fill="none"
+                                            stroke="#000000"
+                                            strokeWidth={isSelected ? "4" : "3"}
+                                            strokeDasharray={line.lineStyle === 'dotted' ? '5,5' : 'none'}
+                                            markerEnd="url(#arrowhead-line)"
+                                            className="pointer-events-none"
+                                        />
+                                    </>
                                 );
                             } else {
                                 // Straight line
                                 const start = points[0];
                                 const end = points[points.length - 1];
                                 pathElement = (
-                                    <line
-                                        key={line.instanceId}
-                                        x1={start.x}
-                                        y1={start.y}
-                                        x2={end.x}
-                                        y2={end.y}
-                                        stroke="#000000"
-                                        strokeWidth={isSelected ? "4" : "3"}
-                                        strokeDasharray={line.lineStyle === 'dotted' ? '5,5' : 'none'}
-                                        markerEnd="url(#arrowhead-line)"
-                                        className="pointer-events-auto cursor-pointer"
-                                        onClick={(e) => { e.stopPropagation(); setSelectedId(line.instanceId); }}
-                                    />
+                                    <>
+                                        {/* Invisible wider stroke for better click detection */}
+                                        <line
+                                            key={`${line.instanceId}-hitarea`}
+                                            x1={start.x}
+                                            y1={start.y}
+                                            x2={end.x}
+                                            y2={end.y}
+                                            stroke="transparent"
+                                            strokeWidth="15"
+                                            className="pointer-events-auto cursor-pointer"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (deleteMode) {
+                                                    handleDeleteElement(line.instanceId);
+                                                } else {
+                                                    setSelectedId(line.instanceId);
+                                                }
+                                            }}
+                                        />
+                                        {/* Visible line */}
+                                        <line
+                                            key={line.instanceId}
+                                            x1={start.x}
+                                            y1={start.y}
+                                            x2={end.x}
+                                            y2={end.y}
+                                            stroke="#000000"
+                                            strokeWidth={isSelected ? "4" : "3"}
+                                            strokeDasharray={line.lineStyle === 'dotted' ? '5,5' : 'none'}
+                                            markerEnd="url(#arrowhead-line)"
+                                            className="pointer-events-none"
+                                        />
+                                    </>
                                 );
                             }
 
@@ -861,22 +921,29 @@ const DrillDesignerPage = () => {
                                         {draggedAsset.variant === 'x' && <X size={20} className="text-white" />}
                                     </div>
                                 )}
-                                {draggedAsset.type === 'icon' && <span className="text-4xl">{draggedAsset.icon}</span>}
+                                {draggedAsset.type === 'icon' && <span className="text-xs">{draggedAsset.icon}</span>}
                                 {draggedAsset.type === 'equipment' && (
                                     <div className="w-full h-full flex items-center justify-center">
                                         {draggedAsset.variant === 'cone' && (
-                                            <svg viewBox="0 0 24 24" className="w-10 h-10" style={{ fill: selectedColor }}>
-                                                <path d="M12 2 L2 22 L22 22 Z" />
+                                            <svg viewBox="0 0 64 64" className="w-10 h-12">
+                                                {/* <!-- Base --> */}
+                                                <polygon points="12,52 52,52 52,60 12,60" fill="#ff7a00" />
+
+                                                {/* <!-- Cone body (25% taller) --> */}
+                                                <polygon points="32,-6 48,52 16,52" fill="#ff8c1a" />
+
+                                                {/* <!-- Highlight (scaled with height) --> */}
+                                                <polygon points="32,-2 38,52 30,52" fill="#ffa64d" opacity="0.9" />
                                             </svg>
                                         )}
                                         {draggedAsset.variant === 'marker' && (
                                             <div className="w-10 h-10 rounded-full" style={{ backgroundColor: selectedColor }}></div>
                                         )}
                                         {draggedAsset.variant === 'pole' && (
-                                            <div className="flex flex-col items-center">
-                                                <div className="w-1 h-10 bg-slate-200"></div>
-                                                <div className="w-5 h-5 rounded-full -mt-2" style={{ backgroundColor: selectedColor }}></div>
-                                            </div>
+                                            <svg viewBox="0 0 16 16" className="w-10 h-10" fill={selectedColor}>
+                                                <rect x="1" y="0" width="1" height="16" fill="#666" />
+                                                <path d="M 2 1 L 10 3 L 2 5 Z" />
+                                            </svg>
                                         )}
                                         {draggedAsset.variant === 'hurdle' && (
                                             <div className="w-12 h-8 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: selectedColor }}></div>
@@ -917,186 +984,204 @@ const DrillDesignerPage = () => {
             </main>
 
             {/* ========== BOTTOM TOOLBAR (35%) ========== */}
-            <footer className="h-[35vh] bg-[#18181b] border-t border-white/10 flex flex-col shrink-0">
+            {!isViewMode && (
+                <footer className="h-[35vh] bg-[#18181b] border-t border-white/10 flex flex-col shrink-0">
 
-                {/* Color Picker */}
-                <div className="px-4 py-2 border-b border-white/10 bg-[#121212] flex justify-between">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs text-zinc-400 font-semibold uppercase">Color:</span>
-                        <div className="flex gap-2">
-                            {COLORS.map(c => (
+                    {/* Color Picker */}
+                    {!isViewMode && (
+                        <div className="px-4 py-2 border-b border-white/10 bg-[#121212] flex justify-between">
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-zinc-400 font-semibold uppercase">Color:</span>
+                                <div className="flex gap-2">
+                                    {COLORS.map(c => (
+                                        <button
+                                            key={c.id}
+                                            onClick={() => setSelectedColor(c.value)}
+                                            className={`w-6 h-6 rounded-full border-2 transition-transform ${selectedColor === c.value ? 'border-white scale-110' : 'border-transparent'}`}
+                                            style={{ backgroundColor: c.value }}
+                                            title={c.label}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                {/* Button to move selected item in the field */}
                                 <button
-                                    key={c.id}
-                                    onClick={() => setSelectedColor(c.value)}
-                                    className={`w-6 h-6 rounded-full border-2 transition-transform ${selectedColor === c.value ? 'border-white scale-110' : 'border-transparent'}`}
-                                    style={{ backgroundColor: c.value }}
-                                    title={c.label}
-                                />
+                                    onClick={toggleMoveMode}
+                                    className={`p-1 rounded transition-all ${moveMode
+                                        ? 'text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 bg-blue-500/20'
+                                        : 'text-gray-400 hover:text-gray-300 hover:bg-gray-500/10'
+                                        }`}
+                                    title={moveMode ? "Deactivate Move Mode" : "Activate Move Mode"}
+                                >
+                                    <Move className="h-6 w-6" />
+                                </button>
+
+                                {/* Button to delete selected item from the field */}
+                                <button
+                                    onClick={toggleDeleteMode}
+                                    className={`p-1 rounded transition-all ${deleteMode
+                                        ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10 bg-red-500/20'
+                                        : 'text-gray-400 hover:text-gray-300 hover:bg-gray-500/10'
+                                        }`}
+                                    title={deleteMode ? "Deactivate Delete Mode" : "Activate Delete Mode"}
+                                >
+                                    <Trash2Icon className="h-6 w-6" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Tabs */}
+                    <div className="flex border-b border-white/5 bg-[#121212]">
+                        {(['players', 'equipment', 'shapes', 'arrows'] as const).map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => {
+                                    setActiveTab(tab);
+                                    // Clear drag state when switching tabs to prevent ghost previews
+                                    setDraggedAsset(null);
+                                    setTouchDragPos(null);
+                                    // Clear line selection when switching away from arrows
+                                    if (tab !== 'arrows') {
+                                        setSelectedLineType(null);
+                                    }
+                                }}
+                                className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${activeTab === tab ? 'text-blue-500 border-b-2 border-blue-500 bg-[#18181b]' : 'text-zinc-500'
+                                    }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Content Grid */}
+                    <div className="flex-1 overflow-y-auto p-4 overscroll-contain">
+                        <div className="grid grid-cols-3 gap-3 pb-4">
+                            {(ASSETS[activeTab] as any[]).map((asset) => (
+                                <div
+                                    key={asset.id}
+                                    draggable={asset.type !== 'line'}
+                                    onDragStart={(e) => asset.type !== 'line' && handleDragStart(e, asset)}
+                                    onTouchStart={(e) => asset.type !== 'line' && handleTouchStart(e, asset)}
+                                    onClick={() => {
+                                        if (asset.type === 'line') {
+                                            setSelectedLineType(asset);
+                                        }
+                                    }}
+                                    className={`bg-slate-700/50 border border-slate-600 rounded-xl p-2 h-28 flex flex-col items-center justify-center gap-1 active:bg-emerald-900/40 transition-colors ${asset.type === 'line' ? 'cursor-pointer' : 'cursor-grab'
+                                        } ${selectedLineType?.id === asset.id ? 'ring-2 ring-emerald-500 bg-emerald-900/40' : ''
+                                        }`}
+                                >
+                                    {/* Player Preview */}
+                                    {asset.type === 'player' && (
+                                        <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center shadow-lg" style={{ backgroundColor: selectedColor }}>
+                                            {asset.isGK ? (
+                                                <span className="text-white font-bold text-sm">G</span>
+                                            ) : asset.isDefender ? (
+                                                <span className="text-white font-bold text-sm">D</span>
+                                            ) : (
+                                                <User size={14} className="text-white" />
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Marker Preview (X and Empty Circle) */}
+                                    {asset.type === 'marker' && (
+                                        <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center shadow-lg" style={{ backgroundColor: selectedColor }}>
+                                            {asset.variant === 'x' && <X size={14} className="text-white" />}
+                                        </div>
+                                    )}
+
+                                    {/* Icon Preview */}
+                                    {asset.type === 'icon' && <span className="text-xs">{asset.icon}</span>}
+
+                                    {/* Equipment Previews */}
+                                    {asset.type === 'equipment' && (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            {asset.variant === 'cone' && (
+                                                <svg viewBox="0 0 64 64" className="w-8 h-8 drop-shadow-md">
+                                                    {/* Base */}
+                                                    <polygon points="12,52 52,52 52,60 12,60" fill="#ff7a00" />
+                                                    {/* Cone body */}
+                                                    <polygon points="32,6 48,52 16,52" fill="#ff8c1a" />
+                                                    {/* Highlight */}
+                                                    <polygon points="32,10 38,52 30,52" fill="#ffa64d" opacity="0.9" />
+                                                </svg>
+                                            )}
+                                            {asset.variant === 'marker' && (
+                                                <div className="w-8 h-8 rounded-full shadow-md border-2 border-black/10" style={{ backgroundColor: selectedColor }}></div>
+                                            )}
+                                            {asset.variant === 'pole' && (
+                                                <svg viewBox="0 0 16 16" className="w-8 h-8" fill={selectedColor}>
+                                                    <rect x="1" y="0" width="1" height="16" fill="#666" />
+                                                    <path d="M 2 1 L 10 3 L 2 5 Z" />
+                                                </svg>
+                                            )}
+                                            {asset.variant === 'hurdle' && (
+                                                <div className="w-10 h-6 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: selectedColor }}></div>
+                                            )}
+                                            {asset.variant === 'minigoal' && (
+                                                <div className="w-10 h-6 border-2" style={{ borderColor: selectedColor }}>
+                                                    <div className="w-full h-full border border-dashed border-current opacity-50"></div>
+                                                </div>
+                                            )}
+                                            {asset.variant === 'ladder' && (
+                                                <div className="w-10 h-4 flex border-y-2" style={{ borderColor: selectedColor }}>
+                                                    <div className="flex-1 border-r-2 border-current"></div>
+                                                    <div className="flex-1 border-r-2 border-current"></div>
+                                                    <div className="flex-1"></div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Shape Previews */}
+                                    {asset.type === 'shape' && (
+                                        <>
+                                            {asset.variant === 'cross' && <X size={32} strokeWidth={4} style={{ color: selectedColor }} />}
+                                            {asset.variant === 'arrow' && <ArrowUpRight size={32} strokeWidth={2} style={{ color: selectedColor }} />}
+                                            {asset.variant === 'rect' && (
+                                                <div className={`w-8 h-8 border-2 ${asset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
+                                            )}
+                                            {asset.variant === 'square' && (
+                                                <div className={`w-8 h-8 border-2 ${asset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
+                                            )}
+                                            {asset.variant === 'circle' && (
+                                                <div className={`w-8 h-8 border-2 rounded-full ${asset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {/* Line Type Preview */}
+                                    {asset.type === 'line' && (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <svg width="60" height="30" className="overflow-visible">
+                                                {asset.lineStyle === 'solid' && (
+                                                    <line x1="5" y1="15" x2="55" y2="15" stroke="#000000" strokeWidth="2" markerEnd="url(#arrowhead-preview)" />
+                                                )}
+                                                {asset.lineStyle === 'dotted' && (
+                                                    <line x1="5" y1="15" x2="55" y2="15" stroke="#000000" strokeWidth="2" strokeDasharray="4,3" markerEnd="url(#arrowhead-preview)" />
+                                                )}
+                                                {asset.lineStyle === 'dribble' && (
+                                                    <path d="M5,15 Q10,10 15,15 T25,15 T35,15 T45,15 L55,15" fill="none" stroke="#000000" strokeWidth="2" markerEnd="url(#arrowhead-preview)" />
+                                                )}
+                                                <defs>
+                                                    <marker id="arrowhead-preview" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                                                        <polyline points="1,1 7,4 1,7" fill="none" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                    </marker>
+                                                </defs>
+                                            </svg>
+                                        </div>
+                                    )}
+
+                                    <span className="text-[10px] font-medium text-slate-300 z-10">{asset.label}</span>
+                                </div>
                             ))}
                         </div>
                     </div>
-                    <div>
-                        {/* Button to move selected item in the field */}
-                        <button
-                            onClick={toggleMoveMode}
-                            className={`p-1 rounded transition-all ${moveMode
-                                ? 'text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 bg-blue-500/20'
-                                : 'text-gray-400 hover:text-gray-300 hover:bg-gray-500/10'
-                                }`}
-                            title={moveMode ? "Deactivate Move Mode" : "Activate Move Mode"}
-                        >
-                            <Move className="h-6 w-6" />
-                        </button>
-
-                        {/* Button to delete selected item from the field */}
-                        <button
-                            onClick={toggleDeleteMode}
-                            className={`p-1 rounded transition-all ${deleteMode
-                                ? 'text-red-400 hover:text-red-300 hover:bg-red-500/10 bg-red-500/20'
-                                : 'text-gray-400 hover:text-gray-300 hover:bg-gray-500/10'
-                                }`}
-                            title={deleteMode ? "Deactivate Delete Mode" : "Activate Delete Mode"}
-                        >
-                            <Trash2Icon className="h-6 w-6" />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Tabs */}
-                <div className="flex border-b border-white/5 bg-[#121212]">
-                    {(['players', 'equipment', 'shapes', 'arrows'] as const).map(tab => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${activeTab === tab ? 'text-blue-500 border-b-2 border-blue-500 bg-[#18181b]' : 'text-zinc-500'
-                                }`}
-                        >
-                            {tab}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Content Grid */}
-                <div className="flex-1 overflow-y-auto p-4 overscroll-contain">
-                    <div className="grid grid-cols-3 gap-3 pb-4">
-                        {(ASSETS[activeTab] as any[]).map((asset) => (
-                            <div
-                                key={asset.id}
-                                draggable={asset.type !== 'line'}
-                                onDragStart={(e) => asset.type !== 'line' && handleDragStart(e, asset)}
-                                onTouchStart={(e) => asset.type !== 'line' && handleTouchStart(e, asset)}
-                                onClick={() => {
-                                    if (asset.type === 'line') {
-                                        setSelectedLineType(asset);
-                                    }
-                                }}
-                                className={`bg-slate-700/50 border border-slate-600 rounded-xl p-2 h-28 flex flex-col items-center justify-center gap-1 active:bg-emerald-900/40 transition-colors ${asset.type === 'line' ? 'cursor-pointer' : 'cursor-grab'
-                                    } ${selectedLineType?.id === asset.id ? 'ring-2 ring-emerald-500 bg-emerald-900/40' : ''
-                                    }`}
-                            >
-                                {/* Player Preview */}
-                                {asset.type === 'player' && (
-                                    <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center shadow-lg" style={{ backgroundColor: selectedColor }}>
-                                        {asset.isGK ? (
-                                            <span className="text-white font-bold text-sm">G</span>
-                                        ) : asset.isDefender ? (
-                                            <span className="text-white font-bold text-sm">D</span>
-                                        ) : (
-                                            <User size={14} className="text-white" />
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Marker Preview (X and Empty Circle) */}
-                                {asset.type === 'marker' && (
-                                    <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center shadow-lg" style={{ backgroundColor: selectedColor }}>
-                                        {asset.variant === 'x' && <X size={14} className="text-white" />}
-                                    </div>
-                                )}
-
-                                {/* Icon Preview */}
-                                {asset.type === 'icon' && <span className="text-3xl">{asset.icon}</span>}
-
-                                {/* Equipment Previews */}
-                                {asset.type === 'equipment' && (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        {asset.variant === 'cone' && (
-                                            <svg viewBox="0 0 24 24" className="w-8 h-8 drop-shadow-md" style={{ fill: selectedColor }}>
-                                                <path d="M12 2 L2 22 L22 22 Z" />
-                                            </svg>
-                                        )}
-                                        {asset.variant === 'marker' && (
-                                            <div className="w-8 h-8 rounded-full shadow-md border-2 border-black/10" style={{ backgroundColor: selectedColor }}></div>
-                                        )}
-                                        {asset.variant === 'pole' && (
-                                            <div className="flex flex-col items-center">
-                                                <div className="w-1 h-8 bg-slate-200"></div>
-                                                <div className="w-4 h-4 rounded-full -mt-2 shadow-sm" style={{ backgroundColor: selectedColor }}></div>
-                                            </div>
-                                        )}
-                                        {asset.variant === 'hurdle' && (
-                                            <div className="w-10 h-6 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: selectedColor }}></div>
-                                        )}
-                                        {asset.variant === 'minigoal' && (
-                                            <div className="w-10 h-6 border-2" style={{ borderColor: selectedColor }}>
-                                                <div className="w-full h-full border border-dashed border-current opacity-50"></div>
-                                            </div>
-                                        )}
-                                        {asset.variant === 'ladder' && (
-                                            <div className="w-10 h-4 flex border-y-2" style={{ borderColor: selectedColor }}>
-                                                <div className="flex-1 border-r-2 border-current"></div>
-                                                <div className="flex-1 border-r-2 border-current"></div>
-                                                <div className="flex-1"></div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Shape Previews */}
-                                {asset.type === 'shape' && (
-                                    <>
-                                        {asset.variant === 'cross' && <X size={32} strokeWidth={4} style={{ color: selectedColor }} />}
-                                        {asset.variant === 'arrow' && <ArrowUpRight size={32} strokeWidth={2} style={{ color: selectedColor }} />}
-                                        {asset.variant === 'rect' && (
-                                            <div className={`w-8 h-8 border-2 ${asset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
-                                        )}
-                                        {asset.variant === 'square' && (
-                                            <div className={`w-8 h-8 border-2 ${asset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
-                                        )}
-                                        {asset.variant === 'circle' && (
-                                            <div className={`w-8 h-8 border-2 rounded-full ${asset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
-                                        )}
-                                    </>
-                                )}
-
-                                {/* Line Type Preview */}
-                                {asset.type === 'line' && (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <svg width="60" height="30" className="overflow-visible">
-                                            {asset.lineStyle === 'solid' && (
-                                                <line x1="5" y1="15" x2="55" y2="15" stroke="#000000" strokeWidth="2" markerEnd="url(#arrowhead-preview)" />
-                                            )}
-                                            {asset.lineStyle === 'dotted' && (
-                                                <line x1="5" y1="15" x2="55" y2="15" stroke="#000000" strokeWidth="2" strokeDasharray="4,3" markerEnd="url(#arrowhead-preview)" />
-                                            )}
-                                            {asset.lineStyle === 'dribble' && (
-                                                <path d="M5,15 Q10,10 15,15 T25,15 T35,15 T45,15 L55,15" fill="none" stroke="#000000" strokeWidth="2" markerEnd="url(#arrowhead-preview)" />
-                                            )}
-                                            <defs>
-                                                <marker id="arrowhead-preview" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-                                                    <polyline points="1,1 7,4 1,7" fill="none" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                                </marker>
-                                            </defs>
-                                        </svg>
-                                    </div>
-                                )}
-
-                                <span className="text-[10px] font-medium text-slate-300 z-10">{asset.label}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </footer>
+                </footer>
+            )}
         </div>
     );
 };
