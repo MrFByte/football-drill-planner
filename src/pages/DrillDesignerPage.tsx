@@ -4,7 +4,6 @@ import {
     X,
     ArrowLeft,
     User,
-    ArrowUpRight,
     Trash2Icon,
     Move,
 } from 'lucide-react';
@@ -26,6 +25,7 @@ interface PitchElement {
     icon?: string;
     variant?: string;
     dashed?: boolean;
+    shaded?: boolean;
     fixedColor?: boolean;
     // Line-specific properties
     points?: { x: number, y: number }[];
@@ -61,19 +61,20 @@ const ASSETS = {
         { id: 'ball', type: 'icon' as const, icon: '⚽', label: 'Ball', fixedColor: true, width: 0.25, height: 0.25 },
         { id: 'cone', type: 'equipment' as const, variant: 'cone', label: 'Cone', width: 4, height: 4 },
         { id: 'pole', type: 'equipment' as const, variant: 'pole', label: 'Flag', width: 3, height: 4 },
-        { id: 'hurdle', type: 'equipment' as const, variant: 'hurdle', label: 'Hurdle', width: 6, height: 4 },
-        { id: 'minigoal', type: 'equipment' as const, variant: 'minigoal', label: 'Goal', width: 10, height: 6 },
+        { id: 'hurdle', type: 'equipment' as const, variant: 'hurdle', label: 'Hurdle', width: 8, height: 6 },
+        { id: 'minigoal', type: 'equipment' as const, variant: 'minigoal', label: 'Goal', width: 20, height: 6 },
         { id: 'ladder', type: 'equipment' as const, variant: 'ladder', label: 'Ladder', width: 15, height: 5 },
     ],
     shapes: [
-        { id: 'arrow', type: 'shape' as const, variant: 'arrow', label: 'Arrow', width: 10, height: 10 },
-        { id: 'arrow-dash', type: 'shape' as const, variant: 'arrow', label: 'Arr Dot', width: 10, height: 10, dashed: true },
         { id: 'square', type: 'shape' as const, variant: 'square', label: 'Square', width: 10, height: 10 },
         { id: 'square-dash', type: 'shape' as const, variant: 'square', label: 'Sq Dot', width: 10, height: 10, dashed: true },
+        { id: 'square-shade', type: 'shape' as const, variant: 'square', label: 'Sq Shade', width: 10, height: 10, shaded: true },
         { id: 'circle', type: 'shape' as const, variant: 'circle', label: 'Circle', width: 10, height: 10 },
         { id: 'circle-dash', type: 'shape' as const, variant: 'circle', label: 'Cir Dot', width: 10, height: 10, dashed: true },
+        { id: 'circle-shade', type: 'shape' as const, variant: 'circle', label: 'Cir Shade', width: 10, height: 10, shaded: true },
         { id: 'rect', type: 'shape' as const, variant: 'rect', label: 'Rect', width: 15, height: 8 },
         { id: 'rect-dash', type: 'shape' as const, variant: 'rect', label: 'Rec Dot', width: 15, height: 8, dashed: true },
+        { id: 'rect-shade', type: 'shape' as const, variant: 'rect', label: 'Rec Shade', width: 15, height: 8, shaded: true },
     ],
     arrows: [
         { id: 'straight-dotted', type: 'line' as const, lineStyle: 'dotted' as const, drawMode: 'straight' as const, label: 'Dot Line' },
@@ -103,6 +104,12 @@ const DrillDesignerPage = () => {
     const [selectedLineType, setSelectedLineType] = useState<any>(null);
     const [isDrawing, setIsDrawing] = useState(false);
     const [currentLine, setCurrentLine] = useState<{ x: number, y: number }[]>([]);
+
+    // Shape drawing state
+    const [isDrawingShape, setIsDrawingShape] = useState(false);
+    const [drawingShapeType, setDrawingShapeType] = useState<any>(null);
+    const [drawingShapeStart, setDrawingShapeStart] = useState<{ x: number, y: number } | null>(null);
+    const [currentShapeDimensions, setCurrentShapeDimensions] = useState<{ x: number, y: number, width: number, height: number } | null>(null);
 
     // Interaction modes
     const [moveMode, setMoveMode] = useState(false);
@@ -238,6 +245,7 @@ const DrillDesignerPage = () => {
         setMoveMode(!moveMode);
         setDeleteMode(false);
         setSelectedLineType(null);
+        setDrawingShapeType(null);
         setSelectedId(null);
     };
 
@@ -245,6 +253,7 @@ const DrillDesignerPage = () => {
         setDeleteMode(!deleteMode);
         setMoveMode(false);
         setSelectedLineType(null);
+        setDrawingShapeType(null);
         setSelectedId(null);
     };
 
@@ -313,6 +322,76 @@ const DrillDesignerPage = () => {
         setIsDrawing(false);
         setCurrentLine([]);
     };
+
+    // Shape drawing handlers
+    const handleShapeDrawStart = (e: React.MouseEvent | React.TouchEvent) => {
+        if (!drawingShapeType || drawingShapeType.type !== 'shape') return;
+        if (!pitchRef.current) return;
+
+        const rect = pitchRef.current.getBoundingClientRect();
+        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+        const x = ((clientX - rect.left) / rect.width) * 100;
+        const y = ((clientY - rect.top) / rect.height) * 100;
+
+        setIsDrawingShape(true);
+        setDrawingShapeStart({ x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) });
+        setCurrentShapeDimensions({ x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)), width: 0, height: 0 });
+    };
+
+    const handleShapeDrawMove = (e: React.MouseEvent | React.TouchEvent) => {
+        if (!isDrawingShape || !drawingShapeStart || !pitchRef.current) return;
+
+        const rect = pitchRef.current.getBoundingClientRect();
+        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+        const currentX = ((clientX - rect.left) / rect.width) * 100;
+        const currentY = ((clientY - rect.top) / rect.height) * 100;
+
+        const clampedCurrentX = Math.max(0, Math.min(100, currentX));
+        const clampedCurrentY = Math.max(0, Math.min(100, currentY));
+
+        const x = Math.min(drawingShapeStart.x, clampedCurrentX);
+        const y = Math.min(drawingShapeStart.y, clampedCurrentY);
+        const width = Math.abs(clampedCurrentX - drawingShapeStart.x);
+        const height = Math.abs(clampedCurrentY - drawingShapeStart.y);
+
+        setCurrentShapeDimensions({ x, y, width, height });
+    };
+
+    const handleShapeDrawEnd = () => {
+        if (!isDrawingShape || !drawingShapeType || !currentShapeDimensions || currentShapeDimensions.width < 1 || currentShapeDimensions.height < 1) {
+            setIsDrawingShape(false);
+            setDrawingShapeStart(null);
+            setCurrentShapeDimensions(null);
+            return;
+        }
+
+        // Create the shape element
+        const newShape: PitchElement = {
+            instanceId: Date.now(),
+            id: drawingShapeType.id,
+            type: 'shape',
+            variant: drawingShapeType.variant,
+            x: currentShapeDimensions.x + currentShapeDimensions.width / 2,
+            y: currentShapeDimensions.y + currentShapeDimensions.height / 2,
+            width: currentShapeDimensions.width,
+            height: currentShapeDimensions.height,
+            color: selectedColor,
+            dashed: drawingShapeType.dashed || false,
+            shaded: drawingShapeType.shaded || false,
+            rotation: 0,
+        };
+
+        setElements(prev => [...prev, newShape]);
+        setIsDrawingShape(false);
+        setDrawingShapeStart(null);
+        setCurrentShapeDimensions(null);
+        setDrawingShapeType(null); // Deactivate drawing mode after creating shape
+    };
+
 
 
 
@@ -383,11 +462,15 @@ const DrillDesignerPage = () => {
                     onMouseDown={(e) => {
                         if (selectedLineType) {
                             handleLineDrawStart(e);
+                        } else if (drawingShapeType) {
+                            handleShapeDrawStart(e);
                         }
                     }}
                     onMouseMove={(e) => {
                         if (isDrawing) {
                             handleLineDrawMove(e);
+                        } else if (isDrawingShape) {
+                            handleShapeDrawMove(e);
                         } else {
                             handleTouchMove(e as any);
                         }
@@ -395,16 +478,22 @@ const DrillDesignerPage = () => {
                     onMouseUp={() => {
                         if (isDrawing) {
                             handleLineDrawEnd();
+                        } else if (isDrawingShape) {
+                            handleShapeDrawEnd();
                         }
                     }}
                     onTouchStart={(e) => {
                         if (selectedLineType) {
                             handleLineDrawStart(e);
+                        } else if (drawingShapeType) {
+                            handleShapeDrawStart(e);
                         }
                     }}
                     onTouchMove={(e) => {
                         if (isDrawing) {
                             handleLineDrawMove(e);
+                        } else if (isDrawingShape) {
+                            handleShapeDrawMove(e);
                         } else {
                             handleTouchMove(e);
                         }
@@ -412,12 +501,14 @@ const DrillDesignerPage = () => {
                     onTouchEnd={(e) => {
                         if (isDrawing) {
                             handleLineDrawEnd();
+                        } else if (isDrawingShape) {
+                            handleShapeDrawEnd();
                         } else {
                             handleTouchEnd(e);
                         }
                     }}
                     onClick={() => {
-                        if (!isDrawing) {
+                        if (!isDrawing && !isDrawingShape) {
                             setSelectedId(null);
                             setMoveMode(false);
                             setDeleteMode(false);
@@ -549,7 +640,7 @@ const DrillDesignerPage = () => {
 
                                 {/* Render Icon (Ball) */}
                                 {el.type === 'icon' && (
-                                    <span className="text-xs">{el.icon}</span>
+                                    <span className="text-[0.4rem]">{el.icon}</span>
                                 )}
 
                                 {/* Render Equipment */}
@@ -569,25 +660,80 @@ const DrillDesignerPage = () => {
                                             <div className="w-full h-full rounded-full shadow-md border-2 border-black/10" style={{ backgroundColor: el.color }}></div>
                                         )}
                                         {el.variant === 'pole' && (
-                                            <svg viewBox="0 0 16 16" className="w-full h-full" fill={el.color}>
-                                                <rect x="1" y="0" width="1" height="16" fill="#666" />
-                                                <path d="M 2 1 L 10 3 L 2 5 Z" />
+                                            <svg
+                                                viewBox="0 0 32 48"
+                                                className="w-full h-full"
+                                                fill={el.color}
+                                            >
+                                                <rect x="2" y="0" width="4" height="60" fill={el.color} />
+
+                                                <path d="M 6 2 L 26 8 L 6 14 Z" fill={el.color} />
                                             </svg>
+
+
                                         )}
                                         {el.variant === 'hurdle' && (
-                                            <div className="w-full h-2/3 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: el.color }}></div>
+                                            <svg width="2em" height="2em" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"
+                                                fill={el.color}
+                                            >
+                                                {/* <!--Left stand--> */}
+                                                <rect x="14" y="30" width="2" height="20" rx="2" />
+                                                {/* <!--Right stand--> */}
+                                                <rect x="48" y="30" width="2" height="20" rx="2" />
+                                                {/* <!--Cross bar (hurdle)--> */}
+                                                <rect x="12" y="28" width="40" height="4" rx="2" />
+                                            </svg>
+                                            // <div className="w-full h-2/3 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: el.color }}></div>
                                         )}
                                         {el.variant === 'minigoal' && (
-                                            <div className="w-full h-full border-2 relative" style={{ borderColor: el.color }}>
-                                                <div className="w-full h-full border border-dashed border-current opacity-50"></div>
-                                            </div>
+                                            // <div className="w-full h-full border-2 relative" style={{ borderColor: el.color }}>
+                                            //     <div className="w-full h-full border border-dashed border-current opacity-50"></div>
+                                            // </div>
+                                            <svg
+                                                width="em"
+                                                height="2em"
+                                                viewBox="0 0 256 256"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                {/* <!-- Left post --> */}
+                                                <rect x="24" y="88" width="12" height="96" rx="6" />
+
+                                                {/* <!-- Right post --> */}
+                                                <rect x="220" y="88" width="12" height="96" rx="6" />
+
+                                                {/* <!-- Crossbar --> */}
+                                                <rect x="24" y="88" width="208" height="12" rx="6" />
+
+                                                {/* <!-- Net (horizontal lines) --> */}
+                                                <rect x="24" y="108" width="208" height="3.2" opacity="0.6" />
+                                                <rect x="24" y="124" width="208" height="3.2" opacity="0.6" />
+                                                <rect x="24" y="140" width="208" height="3.2" opacity="0.6" />
+                                                <rect x="24" y="156" width="208" height="3.2" opacity="0.6" />
+                                                <rect x="24" y="172" width="208" height="3.2" opacity="0.6" />
+
+                                                {/* <!-- Net (vertical hints) --> */}
+                                                <rect x="64" y="100" width="3.2" height="84" opacity="0.5" />
+                                                <rect x="128" y="100" width="3.2" height="84" opacity="0.5" />
+                                                <rect x="192" y="100" width="3.2" height="84" opacity="0.5" />
+                                            </svg>
+
                                         )}
                                         {el.variant === 'ladder' && (
-                                            <div className="w-full h-full flex border-y-2" style={{ borderColor: el.color }}>
-                                                <div className="flex-1 border-r-2 border-current"></div>
-                                                <div className="flex-1 border-r-2 border-current"></div>
-                                                <div className="flex-1"></div>
-                                            </div>
+                                            // <div className="w-full h-full flex border-y-2" style={{ borderColor: el.color }}>
+                                            //     <div className="flex-1 border-r-2 border-current"></div>
+                                            //     <div className="flex-1 border-r-2 border-current"></div>
+                                            //     <div className="flex-1"></div>
+                                            // </div>
+                                            <svg className="w-full h-full" viewBox="14 6 14 46" xmlns="http://www.w3.org/2000/svg">
+                                                {/* <!--Side rails--> */}
+                                                <rect x="16" y="8" width="2" height="48" rx="2" />
+                                                <rect x="30" y="8" width="2" height="48" rx="2" />
+                                                {/* <!--Rungs (3 bars)--> */}
+                                                <rect x="17" y="16" width="15" height="2" rx="2" />
+                                                <rect x="17" y="30" width="15" height="2" rx="2" />
+                                                <rect x="17" y="44" width="15" height="2" rx="2" />
+                                            </svg>
+
                                         )}
                                     </div>
                                 )}
@@ -595,16 +741,32 @@ const DrillDesignerPage = () => {
                                 {/* Render Shapes */}
                                 {el.type === 'shape' && (
                                     <>
-                                        {el.variant === 'cross' && <X size={32} strokeWidth={4} style={{ color: el.color }} />}
-                                        {el.variant === 'arrow' && <ArrowUpRight className="w-full h-full" strokeWidth={2} style={{ color: el.color }} />}
                                         {el.variant === 'rect' && (
-                                            <div className={`w-full h-full border-2 ${el.dashed ? 'border-dashed' : ''}`} style={{ borderColor: el.color }}></div>
+                                            <div
+                                                className={`w-full h-full border-2 ${el.dashed ? 'border-dashed' : ''}`}
+                                                style={{
+                                                    borderColor: el.color,
+                                                    backgroundColor: el.shaded ? 'rgba(128, 128, 128, 0.3)' : 'transparent'
+                                                }}
+                                            ></div>
                                         )}
                                         {el.variant === 'square' && (
-                                            <div className={`w-full h-full border-2 ${el.dashed ? 'border-dashed' : ''}`} style={{ borderColor: el.color }}></div>
+                                            <div
+                                                className={`w-full h-full border-2 ${el.dashed ? 'border-dashed' : ''}`}
+                                                style={{
+                                                    borderColor: el.color,
+                                                    backgroundColor: el.shaded ? 'rgba(128, 128, 128, 0.3)' : 'transparent'
+                                                }}
+                                            ></div>
                                         )}
                                         {el.variant === 'circle' && (
-                                            <div className={`w-full h-full border-2 rounded-full ${el.dashed ? 'border-dashed' : ''}`} style={{ borderColor: el.color }}></div>
+                                            <div
+                                                className={`w-full h-full border-2 rounded-full ${el.dashed ? 'border-dashed' : ''}`}
+                                                style={{
+                                                    borderColor: el.color,
+                                                    backgroundColor: el.shaded ? 'rgba(128, 128, 128, 0.3)' : 'transparent'
+                                                }}
+                                            ></div>
                                         )}
                                     </>
                                 )}
@@ -894,6 +1056,51 @@ const DrillDesignerPage = () => {
                                 }
                             })()
                         )}
+
+                        {/* Render current shape being drawn */}
+                        {isDrawingShape && currentShapeDimensions && drawingShapeType && currentShapeDimensions.width > 0 && currentShapeDimensions.height > 0 && (
+                            (() => {
+                                const x = (currentShapeDimensions.x / 100) * pitchWidth;
+                                const y = (currentShapeDimensions.y / 100) * pitchHeight;
+                                const width = (currentShapeDimensions.width / 100) * pitchWidth;
+                                const height = (currentShapeDimensions.height / 100) * pitchHeight;
+
+                                if (drawingShapeType.variant === 'rect' || drawingShapeType.variant === 'square') {
+                                    return (
+                                        <rect
+                                            x={x}
+                                            y={y}
+                                            width={width}
+                                            height={height}
+                                            fill={drawingShapeType.shaded ? 'rgba(128, 128, 128, 0.3)' : 'none'}
+                                            stroke={selectedColor}
+                                            strokeWidth="3"
+                                            strokeDasharray={drawingShapeType.dashed ? '5,5' : 'none'}
+                                            opacity={0.7}
+                                        />
+                                    );
+                                } else if (drawingShapeType.variant === 'circle') {
+                                    const centerX = x + width / 2;
+                                    const centerY = y + height / 2;
+                                    const radiusX = width / 2;
+                                    const radiusY = height / 2;
+                                    return (
+                                        <ellipse
+                                            cx={centerX}
+                                            cy={centerY}
+                                            rx={radiusX}
+                                            ry={radiusY}
+                                            fill={drawingShapeType.shaded ? 'rgba(128, 128, 128, 0.3)' : 'none'}
+                                            stroke={selectedColor}
+                                            strokeWidth="3"
+                                            strokeDasharray={drawingShapeType.dashed ? '5,5' : 'none'}
+                                            opacity={0.7}
+                                        />
+                                    );
+                                }
+                                return null;
+                            })()
+                        )}
                     </svg>
 
                     {/* Touch Drag Preview (Mobile) */}
@@ -966,16 +1173,32 @@ const DrillDesignerPage = () => {
                                 )}
                                 {draggedAsset.type === 'shape' && (
                                     <>
-                                        {draggedAsset.variant === 'cross' && <X size={40} strokeWidth={4} style={{ color: selectedColor }} />}
-                                        {draggedAsset.variant === 'arrow' && <ArrowUpRight size={40} strokeWidth={2} style={{ color: selectedColor }} />}
                                         {draggedAsset.variant === 'rect' && (
-                                            <div className={`w-10 h-10 border-2 ${draggedAsset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
+                                            <div
+                                                className={`w-10 h-10 border-2 ${draggedAsset.dashed ? 'border-dashed' : ''}`}
+                                                style={{
+                                                    borderColor: selectedColor,
+                                                    backgroundColor: draggedAsset.shaded ? 'rgba(128, 128, 128, 0.3)' : 'transparent'
+                                                }}
+                                            ></div>
                                         )}
                                         {draggedAsset.variant === 'square' && (
-                                            <div className={`w-10 h-10 border-2 ${draggedAsset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
+                                            <div
+                                                className={`w-10 h-10 border-2 ${draggedAsset.dashed ? 'border-dashed' : ''}`}
+                                                style={{
+                                                    borderColor: selectedColor,
+                                                    backgroundColor: draggedAsset.shaded ? 'rgba(128, 128, 128, 0.3)' : 'transparent'
+                                                }}
+                                            ></div>
                                         )}
                                         {draggedAsset.variant === 'circle' && (
-                                            <div className={`w-10 h-10 border-2 rounded-full ${draggedAsset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
+                                            <div
+                                                className={`w-10 h-10 border-2 rounded-full ${draggedAsset.dashed ? 'border-dashed' : ''}`}
+                                                style={{
+                                                    borderColor: selectedColor,
+                                                    backgroundColor: draggedAsset.shaded ? 'rgba(128, 128, 128, 0.3)' : 'transparent'
+                                                }}
+                                            ></div>
                                         )}
                                     </>
                                 )}
@@ -1063,16 +1286,22 @@ const DrillDesignerPage = () => {
                             {(ASSETS[activeTab] as any[]).map((asset) => (
                                 <div
                                     key={asset.id}
-                                    draggable={asset.type !== 'line'}
-                                    onDragStart={(e) => asset.type !== 'line' && handleDragStart(e, asset)}
-                                    onTouchStart={(e) => asset.type !== 'line' && handleTouchStart(e, asset)}
+                                    draggable={asset.type !== 'line' && asset.type !== 'shape'}
+                                    onDragStart={(e) => asset.type !== 'line' && asset.type !== 'shape' && handleDragStart(e, asset)}
+                                    onTouchStart={(e) => asset.type !== 'line' && asset.type !== 'shape' && handleTouchStart(e, asset)}
                                     onClick={() => {
                                         if (asset.type === 'line') {
                                             setSelectedLineType(asset);
+                                            setDrawingShapeType(null);
+                                        } else if (asset.type === 'shape') {
+                                            setDrawingShapeType(asset);
+                                            setSelectedLineType(null);
+                                            setMoveMode(false);
+                                            setDeleteMode(false);
                                         }
                                     }}
-                                    className={`bg-slate-700/50 border border-slate-600 rounded-xl p-2 h-28 flex flex-col items-center justify-center gap-1 active:bg-emerald-900/40 transition-colors ${asset.type === 'line' ? 'cursor-pointer' : 'cursor-grab'
-                                        } ${selectedLineType?.id === asset.id ? 'ring-2 ring-emerald-500 bg-emerald-900/40' : ''
+                                    className={`bg-slate-700/50 border border-slate-600 rounded-xl p-2 h-28 flex flex-col items-center justify-center gap-1 active:bg-emerald-900/40 transition-colors ${asset.type === 'line' || asset.type === 'shape' ? 'cursor-pointer' : 'cursor-grab'
+                                        } ${selectedLineType?.id === asset.id || drawingShapeType?.id === asset.id ? 'ring-2 ring-emerald-500 bg-emerald-900/40' : ''
                                         }`}
                                 >
                                     {/* Player Preview */}
@@ -1141,16 +1370,32 @@ const DrillDesignerPage = () => {
                                     {/* Shape Previews */}
                                     {asset.type === 'shape' && (
                                         <>
-                                            {asset.variant === 'cross' && <X size={32} strokeWidth={4} style={{ color: selectedColor }} />}
-                                            {asset.variant === 'arrow' && <ArrowUpRight size={32} strokeWidth={2} style={{ color: selectedColor }} />}
                                             {asset.variant === 'rect' && (
-                                                <div className={`w-8 h-8 border-2 ${asset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
+                                                <div
+                                                    className={`w-8 h-8 border-2 ${asset.dashed ? 'border-dashed' : ''}`}
+                                                    style={{
+                                                        borderColor: selectedColor,
+                                                        backgroundColor: asset.shaded ? 'rgba(128, 128, 128, 0.3)' : 'transparent'
+                                                    }}
+                                                ></div>
                                             )}
                                             {asset.variant === 'square' && (
-                                                <div className={`w-8 h-8 border-2 ${asset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
+                                                <div
+                                                    className={`w-8 h-8 border-2 ${asset.dashed ? 'border-dashed' : ''}`}
+                                                    style={{
+                                                        borderColor: selectedColor,
+                                                        backgroundColor: asset.shaded ? 'rgba(128, 128, 128, 0.3)' : 'transparent'
+                                                    }}
+                                                ></div>
                                             )}
                                             {asset.variant === 'circle' && (
-                                                <div className={`w-8 h-8 border-2 rounded-full ${asset.dashed ? 'border-dashed' : ''}`} style={{ borderColor: selectedColor }}></div>
+                                                <div
+                                                    className={`w-8 h-8 border-2 rounded-full ${asset.dashed ? 'border-dashed' : ''}`}
+                                                    style={{
+                                                        borderColor: selectedColor,
+                                                        backgroundColor: asset.shaded ? 'rgba(128, 128, 128, 0.3)' : 'transparent'
+                                                    }}
+                                                ></div>
                                             )}
                                         </>
                                     )}
