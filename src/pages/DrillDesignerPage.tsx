@@ -94,6 +94,26 @@ const DrillDesignerPage = () => {
     const { currentDrill, updateStep } = useDrill();
     const currentStep = currentDrill?.steps.find(step => step.id === stepId);
 
+    // Calculate field dimensions for display
+    const fieldDims = (() => {
+        if (!currentStep) return { width: 0, height: 0, unit: 'm' };
+
+        let w = 37, h = 55, u = 'm';
+
+        if (currentStep.fieldMeasurement === 'custom') {
+            w = currentStep.width || 0;
+            h = currentStep.height || 0;
+            u = currentStep.unit === 'yard' ? 'yd' : 'm';
+        } else {
+            // Default Dimensions
+            if (currentStep.fieldType === '11v11') { w = 68; h = 105; }
+            else { w = 37; h = 55; }
+        }
+        return { width: w, height: h, unit: u };
+    })();
+
+    const displayHeight = currentStep?.groundType === 'half' ? fieldDims.height / 2 : fieldDims.height;
+
     const [elements, setElements] = useState<PitchElement[]>([]);
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [activeTab, setActiveTab] = useState<'players' | 'equipment' | 'shapes' | 'arrows'>('players');
@@ -537,9 +557,9 @@ const DrillDesignerPage = () => {
                         {currentStep?.groundType === 'half' ? (
                             /* Half Ground: Only bottom half borders */
                             <>
-                            
+
                                 <rect x="10" y={pitchHeight / 2} width={pitchWidth - 20} height={pitchHeight / 2 - 10} />
-                                
+
                                 <line x1="10" y1={pitchHeight / 2} x2={pitchWidth - 10} y2={pitchHeight / 2} />
                                 <path d={`M ${pitchWidth / 2 - 40} ${pitchHeight / 2} A 40 40 0 0 0 ${pitchWidth / 2 + 40} ${pitchHeight / 2}`} />
                                 <circle cx={pitchWidth / 2} cy={pitchHeight / 2} r="2" fill="white" />
@@ -569,6 +589,42 @@ const DrillDesignerPage = () => {
                             </>
                         )}
                     </svg>
+
+                    {/* Dimension Markers */}
+                    <div className="absolute inset-0 pointer-events-none z-0" style={{ color: COLORS.find(c => c.id === 'yellow')?.value || '#fbbf24' }}>
+                        {/* Horizontal Width Marker (Top) */}
+                        <div className="absolute top-[-0.8rem] left-0 right-0 h-8 flex justify-center items-start">
+                            <svg viewBox="0 0 140 40" className="h-full w-auto max-w-[90%] overflow-visible text-yellow-400" xmlns="http://www.w3.org/2000/svg">
+                                <line x1="10" y1="20" x2="55" y2="20" stroke="currentColor" strokeWidth="0.5" />
+                                <line x1="85" y1="20" x2="130" y2="20" stroke="currentColor" strokeWidth="0.5" />
+                                <polygon points="4,20 14,14 14,26" fill="currentColor" />
+                                <polygon points="136,20 126,14 126,26" fill="currentColor" />
+                                <text x="70" y="20" textAnchor="middle" dominantBaseline="middle" fontSize="8" fill="currentColor">
+                                    {fieldDims.width} {fieldDims.unit}
+                                </text>
+                            </svg>
+                        </div>
+
+                        {/* Vertical Height Marker (Left) */}
+                        <div className="absolute left-[-0.8rem] top-0 bottom-0 w-8 flex flex-col justify-center items-start">
+                            <svg viewBox="0 0 40 140" className="w-full h-auto max-h-[90%] overflow-visible text-yellow-400" xmlns="http://www.w3.org/2000/svg">
+                                <line x1="20" y1="10" x2="20" y2="55" stroke="currentColor" strokeWidth="0.5" />
+                                <line x1="20" y1="85" x2="20" y2="130" stroke="currentColor" strokeWidth="0.5" />
+                                <polygon points="20,4 14,14 26,14" fill="currentColor" />
+                                <polygon points="20,136 14,126 26,126" fill="currentColor" />
+                                <text x="20" y="70" textAnchor="middle" dominantBaseline="middle" fontSize="8" fill="currentColor" transform="rotate(-90 20 70)">
+                                    {displayHeight} {fieldDims.unit}
+                                </text>
+                            </svg>
+                        </div>
+
+                        {/* Field Type Label */}
+                        <div className="absolute right-2 bottom-[-0.3rem] text-[9px] font-bold text-yellow-400 select-none opacity-80">
+                            {currentStep?.fieldType}
+                        </div>
+
+
+                    </div>
 
                     {/* Rendered Elements */}
                     {elements.map((el) => {
@@ -1566,7 +1622,7 @@ const DrillDesignerPage = () => {
 
                                     <span className="text-[10px] font-medium text-slate-300 z-10">
                                         {asset.label}
-                                        </span>
+                                    </span>
                                 </div>
                             ))}
                         </div>
