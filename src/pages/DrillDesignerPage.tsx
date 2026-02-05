@@ -60,9 +60,11 @@ const ASSETS = {
     equipment: [
         { id: 'ball', type: 'icon' as const, icon: '⚽', label: 'Ball', fixedColor: true, width: 0.25, height: 0.25 },
         { id: 'cone', type: 'equipment' as const, variant: 'cone', label: 'Cone', width: 4, height: 4 },
-        { id: 'pole', type: 'equipment' as const, variant: 'pole', label: 'Flag', width: 3, height: 4 },
+        { id: 'marker', type: 'equipment' as const, variant: 'marker', label: 'Disc', width: 4, height: 4 },
+        { id: 'pole', type: 'equipment' as const, variant: 'pole', label: 'Pole', width: 3, height: 4 },
         { id: 'hurdle', type: 'equipment' as const, variant: 'hurdle', label: 'Hurdle', width: 8, height: 6 },
-        { id: 'minigoal', type: 'equipment' as const, variant: 'minigoal', label: 'Goal', width: 20, height: 6 },
+        { id: '5sgoal', type: 'equipment' as const, variant: '5sgoal', label: 'S Goal Post', width: 15, height: 8 },
+        { id: 'minigoal', type: 'equipment' as const, variant: 'minigoal', label: 'Goal Post', width: 20, height: 6 },
         { id: 'ladder', type: 'equipment' as const, variant: 'ladder', label: 'Ladder', width: 15, height: 5 },
     ],
     shapes: [
@@ -79,8 +81,8 @@ const ASSETS = {
     arrows: [
         { id: 'straight-dotted', type: 'line' as const, lineStyle: 'dotted' as const, drawMode: 'straight' as const, label: 'Dot Line' },
         { id: 'freehand-dotted', type: 'line' as const, lineStyle: 'dotted' as const, drawMode: 'freehand' as const, label: 'Dot Free' },
-        { id: 'straight-dribble', type: 'line' as const, lineStyle: 'dribble' as const, drawMode: 'straight' as const, label: 'Dribble' },
-        { id: 'freehand-dribble', type: 'line' as const, lineStyle: 'dribble' as const, drawMode: 'freehand' as const, label: 'Drib Free' },
+        // { id: 'straight-dribble', type: 'line' as const, lineStyle: 'dribble' as const, drawMode: 'straight' as const, label: 'Dribble' },
+        // { id: 'freehand-dribble', type: 'line' as const, lineStyle: 'dribble' as const, drawMode: 'freehand' as const, label: 'Drib Free' },
         { id: 'freehand-solid', type: 'line' as const, lineStyle: 'solid' as const, drawMode: 'freehand' as const, label: 'Free Line' },
         { id: 'straight-solid', type: 'line' as const, lineStyle: 'solid' as const, drawMode: 'straight' as const, label: 'Line' },
     ]
@@ -657,19 +659,28 @@ const DrillDesignerPage = () => {
                                             </svg>
                                         )}
                                         {el.variant === 'marker' && (
-                                            <div className="w-full h-full rounded-full shadow-md border-2 border-black/10" style={{ backgroundColor: el.color }}></div>
+                                            <svg
+                                                width="1em"
+                                                height="1em"
+                                                viewBox="0 0 64 64"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="w-full h-full"
+                                            >
+                                                <circle cx="32" cy="32" r="20" fill={el.color} />
+                                            </svg>
                                         )}
                                         {el.variant === 'pole' && (
                                             <svg
-                                                viewBox="0 0 32 48"
+                                                viewBox="0 0 64 128"
                                                 className="w-full h-full"
                                                 fill={el.color}
                                             >
-                                                <rect x="2" y="0" width="4" height="60" fill={el.color} />
+                                                {/* Ground base */}
+                                                <rect x="19" y="114" width="26" height="14" rx="2" />
 
-                                                <path d="M 6 2 L 26 8 L 6 14 Z" fill={el.color} />
+                                                {/* Pole (2× height) */}
+                                                <rect x="26.5" y="0" width="10" height="128" rx="2" />
                                             </svg>
-
 
                                         )}
                                         {el.variant === 'hurdle' && (
@@ -684,6 +695,31 @@ const DrillDesignerPage = () => {
                                                 <rect x="12" y="28" width="40" height="4" rx="2" />
                                             </svg>
                                             // <div className="w-full h-2/3 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: el.color }}></div>
+                                        )}
+                                        {el.variant === '5sgoal' && (
+                                            <svg
+                                                width="2em"
+                                                height="2em"
+                                                viewBox="0 0 64 64"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill={el.color}
+                                            >
+                                                {/* Left post */}
+                                                <rect x="14" y="22" width="3" height="20" rx="1.5" />
+                                                {/* Right post */}
+                                                <rect x="46" y="22" width="3" height="20" rx="1.5" />
+                                                {/* Crossbar */}
+                                                <rect x="14" y="22" width="35" height="3" rx="1.5" />
+                                                {/* Net (horizontal lines) */}
+                                                <rect x="14" y="27" width="35" height="0.8" opacity="0.6" />
+                                                <rect x="14" y="31" width="35" height="0.8" opacity="0.6" />
+                                                <rect x="14" y="35" width="35" height="0.8" opacity="0.6" />
+                                                <rect x="14" y="39" width="35" height="0.8" opacity="0.6" />
+                                                {/* Net (vertical hints) */}
+                                                <rect x="22" y="25" width="0.8" height="14" opacity="0.5" />
+                                                <rect x="32" y="25" width="0.8" height="14" opacity="0.5" />
+                                                <rect x="40" y="25" width="0.8" height="14" opacity="0.5" />
+                                            </svg>
                                         )}
                                         {el.variant === 'minigoal' && (
                                             // <div className="w-full h-full border-2 relative" style={{ borderColor: el.color }}>
@@ -726,12 +762,12 @@ const DrillDesignerPage = () => {
                                             // </div>
                                             <svg className="w-full h-full" viewBox="14 6 14 46" xmlns="http://www.w3.org/2000/svg">
                                                 {/* <!--Side rails--> */}
-                                                <rect x="16" y="8" width="2" height="48" rx="2" />
-                                                <rect x="30" y="8" width="2" height="48" rx="2" />
+                                                <rect x="16" y="8" width="2" height="48" rx="2" fill={el.color} />
+                                                <rect x="30" y="8" width="2" height="48" rx="2" fill={el.color} />
                                                 {/* <!--Rungs (3 bars)--> */}
-                                                <rect x="17" y="16" width="15" height="2" rx="2" />
-                                                <rect x="17" y="30" width="15" height="2" rx="2" />
-                                                <rect x="17" y="44" width="15" height="2" rx="2" />
+                                                <rect x="17" y="16" width="15" height="2" rx="2" fill="#DADADA" />
+                                                <rect x="17" y="30" width="15" height="2" rx="2" fill="#DADADA" />
+                                                <rect x="17" y="44" width="15" height="2" rx="2" fill="#DADADA" />
                                             </svg>
 
                                         )}
@@ -1146,16 +1182,45 @@ const DrillDesignerPage = () => {
                                             </svg>
                                         )}
                                         {draggedAsset.variant === 'marker' && (
-                                            <div className="w-10 h-10 rounded-full" style={{ backgroundColor: selectedColor }}></div>
+                                            <svg
+                                                width="1em"
+                                                height="1em"
+                                                viewBox="0 0 64 64"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="w-10 h-10"
+                                            >
+                                                <circle cx="32" cy="32" r="20" fill={selectedColor} />
+                                            </svg>
                                         )}
                                         {draggedAsset.variant === 'pole' && (
-                                            <svg viewBox="0 0 16 16" className="w-10 h-10" fill={selectedColor}>
-                                                <rect x="1" y="0" width="1" height="16" fill="#666" />
-                                                <path d="M 2 1 L 10 3 L 2 5 Z" />
+                                            <svg viewBox="0 0 64 64" className="w-10 h-10" fill={selectedColor}>
+                                                {/* Ground base */}
+                                                <rect x="26" y="50" width="12" height="4" rx="2" />
+                                                {/* Pole */}
+                                                <rect x="31" y="8" width="2" height="44" rx="2" />
                                             </svg>
                                         )}
                                         {draggedAsset.variant === 'hurdle' && (
                                             <div className="w-12 h-8 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: selectedColor }}></div>
+                                        )}
+                                        {draggedAsset.variant === '5sgoal' && (
+                                            <svg viewBox="0 0 64 64" className="w-12 h-8" fill={selectedColor}>
+                                                {/* Left post */}
+                                                <rect x="14" y="22" width="3" height="20" rx="1.5" />
+                                                {/* Right post */}
+                                                <rect x="46" y="22" width="3" height="20" rx="1.5" />
+                                                {/* Crossbar */}
+                                                <rect x="14" y="22" width="35" height="3" rx="1.5" />
+                                                {/* Net (horizontal lines) */}
+                                                <rect x="14" y="27" width="35" height="0.8" opacity="0.6" />
+                                                <rect x="14" y="31" width="35" height="0.8" opacity="0.6" />
+                                                <rect x="14" y="35" width="35" height="0.8" opacity="0.6" />
+                                                <rect x="14" y="39" width="35" height="0.8" opacity="0.6" />
+                                                {/* Net (vertical hints) */}
+                                                <rect x="22" y="25" width="0.8" height="14" opacity="0.5" />
+                                                <rect x="32" y="25" width="0.8" height="14" opacity="0.5" />
+                                                <rect x="40" y="25" width="0.8" height="14" opacity="0.5" />
+                                            </svg>
                                         )}
                                         {draggedAsset.variant === 'minigoal' && (
                                             <div className="w-12 h-8 border-2" style={{ borderColor: selectedColor }}>
@@ -1341,21 +1406,76 @@ const DrillDesignerPage = () => {
                                                 </svg>
                                             )}
                                             {asset.variant === 'marker' && (
-                                                <div className="w-8 h-8 rounded-full shadow-md border-2 border-black/10" style={{ backgroundColor: selectedColor }}></div>
+                                                <svg
+                                                    width="1em"
+                                                    height="1em"
+                                                    viewBox="0 0 64 64"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="w-8 h-8"
+                                                >
+                                                    <circle cx="32" cy="32" r="20" fill={selectedColor} />
+                                                </svg>
                                             )}
                                             {asset.variant === 'pole' && (
-                                                <svg viewBox="0 0 16 16" className="w-8 h-8" fill={selectedColor}>
-                                                    <rect x="1" y="0" width="1" height="16" fill="#666" />
-                                                    <path d="M 2 1 L 10 3 L 2 5 Z" />
+                                                <svg viewBox="0 0 64 64" className="w-fit h-fit" fill={selectedColor}>
+                                                    {/* Ground base */}
+                                                    <rect x="26" y="50" width="12" height="4" rx="2" />
+                                                    {/* Pole */}
+                                                    <rect x="31" y="8" width="2" height="44" rx="2" />
                                                 </svg>
                                             )}
                                             {asset.variant === 'hurdle' && (
                                                 <div className="w-10 h-6 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: selectedColor }}></div>
                                             )}
+                                            {asset.variant === '5sgoal' && (
+                                                <svg viewBox="0 0 64 64" className="w-fit h-fit" >
+                                                    {/* Left post */}
+                                                    <rect x="14" y="22" width="3" height="20" rx="1.5" />
+                                                    {/* Right post */}
+                                                    <rect x="46" y="22" width="3" height="20" rx="1.5" />
+                                                    {/* Crossbar */}
+                                                    <rect x="14" y="22" width="35" height="3" rx="1.5" />
+                                                    {/* Net (horizontal lines) */}
+                                                    <rect x="14" y="27" width="35" height="0.8" opacity="0.6" />
+                                                    <rect x="14" y="31" width="35" height="0.8" opacity="0.6" />
+                                                    <rect x="14" y="35" width="35" height="0.8" opacity="0.6" />
+                                                    <rect x="14" y="39" width="35" height="0.8" opacity="0.6" />
+                                                    {/* Net (vertical hints) */}
+                                                    <rect x="22" y="25" width="0.8" height="14" opacity="0.5" />
+                                                    <rect x="32" y="25" width="0.8" height="14" opacity="0.5" />
+                                                    <rect x="40" y="25" width="0.8" height="14" opacity="0.5" />
+                                                </svg>
+                                            )}
                                             {asset.variant === 'minigoal' && (
-                                                <div className="w-10 h-6 border-2" style={{ borderColor: selectedColor }}>
-                                                    <div className="w-full h-full border border-dashed border-current opacity-50"></div>
-                                                </div>
+                                                // <div className="w-10 h-6 border-2" style={{ borderColor: selectedColor }}>
+                                                //     <div className="w-full h-full border border-dashed border-current opacity-50"></div>
+                                                // </div>
+                                                <svg
+                                                    viewBox="0 0 256 256"
+                                                    className="w-fit h-fit"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    {/* <!-- Left post --> */}
+                                                    <rect x="24" y="88" width="12" height="96" rx="6" />
+
+                                                    {/* <!-- Right post --> */}
+                                                    <rect x="220" y="88" width="12" height="96" rx="6" />
+
+                                                    {/* <!-- Crossbar --> */}
+                                                    <rect x="24" y="88" width="208" height="12" rx="6" />
+
+                                                    {/* <!-- Net (horizontal lines) --> */}
+                                                    <rect x="24" y="108" width="208" height="3.2" opacity="0.6" />
+                                                    <rect x="24" y="124" width="208" height="3.2" opacity="0.6" />
+                                                    <rect x="24" y="140" width="208" height="3.2" opacity="0.6" />
+                                                    <rect x="24" y="156" width="208" height="3.2" opacity="0.6" />
+                                                    <rect x="24" y="172" width="208" height="3.2" opacity="0.6" />
+
+                                                    {/* <!-- Net (vertical hints) --> */}
+                                                    <rect x="64" y="100" width="3.2" height="84" opacity="0.5" />
+                                                    <rect x="128" y="100" width="3.2" height="84" opacity="0.5" />
+                                                    <rect x="192" y="100" width="3.2" height="84" opacity="0.5" />
+                                                </svg>
                                             )}
                                             {asset.variant === 'ladder' && (
                                                 <div className="w-10 h-4 flex border-y-2" style={{ borderColor: selectedColor }}>

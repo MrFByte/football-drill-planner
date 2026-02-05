@@ -54,7 +54,10 @@ export default function DrillStepsListPage() {
                                         </div>
                                         <div className="flex-1">
                                             <h3 className="font-semibold text-white">{step.title}</h3>
-                                            <p className="text-sm text-slate-400">
+                                            {step.objective && (
+                                                <p className="text-sm text-slate-300 mt-1">{step.objective}</p>
+                                            )}
+                                            <p className="text-sm text-slate-400 mt-1">
                                                 {step.groundType} Ground • {step.fieldMeasurement === 'default' ? 'Default' : 'Custom'} Field
                                             </p>
                                         </div>
