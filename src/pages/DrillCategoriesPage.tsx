@@ -63,7 +63,7 @@ export default function DrillCategoriesPage() {
                                         <span>{drill.date}</span>
                                     </div>
                                 </div>
-                                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="absolute top-4 right-4 transition-opacity">
                                     <button
                                         onClick={(e) => handleDelete(e, drill.id)}
                                         className="p-2 text-red-400 hover:bg-red-500/10 rounded-full"

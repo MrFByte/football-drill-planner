@@ -66,7 +66,7 @@ export default function DrillStepsListPage() {
                                                 e.stopPropagation()
                                                 deleteStep(step.id)
                                             }}
-                                            className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500/20 rounded-lg"
+                                            className="p-2 hover:bg-red-500/20 rounded-lg transition-colors"
                                         >
                                             <Trash2 className="h-5 w-5 text-red-400" />
                                         </button>

@@ -528,24 +528,46 @@ const DrillDesignerPage = () => {
 
                     {/* SVG Field Markings */}
                     <svg
-                        viewBox={`0 0 ${pitchWidth} ${pitchHeight}`}
+                        viewBox={currentStep?.groundType === 'half'
+                            ? `0 ${pitchHeight / 2} ${pitchWidth} ${pitchHeight / 2}`
+                            : `0 0 ${pitchWidth} ${pitchHeight}`}
                         className="absolute inset-0 w-full h-full stroke-white/70 fill-none stroke-[2] pointer-events-none"
                     >
                         {/* Field Borders */}
-                        <rect x="10" y="10" width={pitchWidth - 20} height={pitchHeight - 20} />
-                        <line x1="10" y1={pitchHeight / 2} x2={pitchWidth - 10} y2={pitchHeight / 2} />
-                        <circle cx={pitchWidth / 2} cy={pitchHeight / 2} r="40" />
-                        <circle cx={pitchWidth / 2} cy={pitchHeight / 2} r="2" fill="white" />
+                        {currentStep?.groundType === 'half' ? (
+                            /* Half Ground: Only bottom half borders */
+                            <>
+                            
+                                <rect x="10" y={pitchHeight / 2} width={pitchWidth - 20} height={pitchHeight / 2 - 10} />
+                                
+                                <line x1="10" y1={pitchHeight / 2} x2={pitchWidth - 10} y2={pitchHeight / 2} />
+                                <path d={`M ${pitchWidth / 2 - 40} ${pitchHeight / 2} A 40 40 0 0 0 ${pitchWidth / 2 + 40} ${pitchHeight / 2}`} />
+                                <circle cx={pitchWidth / 2} cy={pitchHeight / 2} r="2" fill="white" />
 
-                        {/* Top Penalty Box */}
-                        <rect x={pitchWidth / 4} y="10" width={pitchWidth / 2} height="80" />
-                        <rect x={pitchWidth / 3} y="10" width={pitchWidth / 3} height="30" />
-                        <path d={`M ${pitchWidth / 2 - 35} 90 Q ${pitchWidth / 2} 115 ${pitchWidth / 2 + 35} 90`} />
+                                {/* Bottom Penalty Box */}
+                                <rect x={pitchWidth / 4} y={pitchHeight - 90} width={pitchWidth / 2} height="80" />
+                                <rect x={pitchWidth / 3} y={pitchHeight - 40} width={pitchWidth / 3} height="30" />
+                                <path d={`M ${pitchWidth / 2 - 35} ${pitchHeight - 90} Q ${pitchWidth / 2} ${pitchHeight - 115} ${pitchWidth / 2 + 35} ${pitchHeight - 90}`} />
+                            </>
+                        ) : (
+                            /* Full Ground: Complete field */
+                            <>
+                                <rect x="10" y="10" width={pitchWidth - 20} height={pitchHeight - 20} />
+                                <line x1="10" y1={pitchHeight / 2} x2={pitchWidth - 10} y2={pitchHeight / 2} />
+                                <circle cx={pitchWidth / 2} cy={pitchHeight / 2} r="40" />
+                                <circle cx={pitchWidth / 2} cy={pitchHeight / 2} r="2" fill="white" />
 
-                        {/* Bottom Penalty Box */}
-                        <rect x={pitchWidth / 4} y={pitchHeight - 90} width={pitchWidth / 2} height="80" />
-                        <rect x={pitchWidth / 3} y={pitchHeight - 40} width={pitchWidth / 3} height="30" />
-                        <path d={`M ${pitchWidth / 2 - 35} ${pitchHeight - 90} Q ${pitchWidth / 2} ${pitchHeight - 115} ${pitchWidth / 2 + 35} ${pitchHeight - 90}`} />
+                                {/* Top Penalty Box */}
+                                <rect x={pitchWidth / 4} y="10" width={pitchWidth / 2} height="80" />
+                                <rect x={pitchWidth / 3} y="10" width={pitchWidth / 3} height="30" />
+                                <path d={`M ${pitchWidth / 2 - 35} 90 Q ${pitchWidth / 2} 115 ${pitchWidth / 2 + 35} 90`} />
+
+                                {/* Bottom Penalty Box */}
+                                <rect x={pitchWidth / 4} y={pitchHeight - 90} width={pitchWidth / 2} height="80" />
+                                <rect x={pitchWidth / 3} y={pitchHeight - 40} width={pitchWidth / 3} height="30" />
+                                <path d={`M ${pitchWidth / 2 - 35} ${pitchHeight - 90} Q ${pitchWidth / 2} ${pitchHeight - 115} ${pitchWidth / 2 + 35} ${pitchHeight - 90}`} />
+                            </>
+                        )}
                     </svg>
 
                     {/* Rendered Elements */}
@@ -1390,7 +1412,7 @@ const DrillDesignerPage = () => {
                                     )}
 
                                     {/* Icon Preview */}
-                                    {asset.type === 'icon' && <span className="text-xs">{asset.icon}</span>}
+                                    {asset.type === 'icon' && <span className="text-2xl">{asset.icon}</span>}
 
                                     {/* Equipment Previews */}
                                     {asset.type === 'equipment' && (
@@ -1542,7 +1564,9 @@ const DrillDesignerPage = () => {
                                         </div>
                                     )}
 
-                                    <span className="text-[10px] font-medium text-slate-300 z-10">{asset.label}</span>
+                                    <span className="text-[10px] font-medium text-slate-300 z-10">
+                                        {asset.label}
+                                        </span>
                                 </div>
                             ))}
                         </div>
