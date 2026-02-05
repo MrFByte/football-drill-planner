@@ -474,7 +474,7 @@ const DrillDesignerPage = () => {
             </header>
 
             {/* ========== FIELD (60% in edit, 95% in view) ========== */}
-            <main className={`bg-[#121212] flex items-center justify-center p-2 relative shrink-0 ${isViewMode ? 'h-[95vh]' : 'h-[60vh]'
+            <main className={`bg-[#121212] flex items-center justify-center relative shrink-0 ${isViewMode ? 'h-[85vh] p-8' : 'h-[60vh] p-2'
                 }`}>
                 {/* Pitch Container */}
                 <div
