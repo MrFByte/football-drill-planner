@@ -506,6 +506,7 @@ const DrillDesignerPage = () => {
                         }
                     }}
                     onTouchStart={(e) => {
+                        e.preventDefault(); // Prevent pull-to-refresh
                         if (selectedLineType) {
                             handleLineDrawStart(e);
                         } else if (drawingShapeType) {
@@ -513,6 +514,7 @@ const DrillDesignerPage = () => {
                         }
                     }}
                     onTouchMove={(e) => {
+                        e.preventDefault(); // Prevent pull-to-refresh
                         if (isDrawing) {
                             handleLineDrawMove(e);
                         } else if (isDrawingShape) {
@@ -539,6 +541,7 @@ const DrillDesignerPage = () => {
                     }}
                     className={`relative h-full aspect-[2/3] max-w-full bg-[#2e7d32] shadow-2xl border-[3px] border-[#388e3c] overflow-hidden rounded-md transition-transform duration-300 ${isViewMode ? 'scale-110' : ''
                         }`}
+                    style={{ touchAction: 'none' }}
                 >
                     {/* Grass Stripes */}
                     <div className="absolute inset-0 flex flex-col opacity-30 pointer-events-none">
