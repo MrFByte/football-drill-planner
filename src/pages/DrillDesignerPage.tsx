@@ -62,7 +62,8 @@ const ASSETS = {
         { id: 'cone', type: 'equipment' as const, variant: 'cone', label: 'Cone', width: 4, height: 4 },
         { id: 'marker', type: 'equipment' as const, variant: 'marker', label: 'Shade', width: 4, height: 4 },
         { id: 'pole', type: 'equipment' as const, variant: 'pole', label: 'Pole', width: 3, height: 4 },
-        { id: 'hurdle', type: 'equipment' as const, variant: 'hurdle', label: 'Hurdle', width: 8, height: 6 },
+        { id: 'h_hurdle', type: 'equipment' as const, variant: 'h_hurdle', label: 'H-Hurdle', width: 8, height: 6 },
+        { id: 'v_hurdle', type: 'equipment' as const, variant: 'v_hurdle', label: 'V-Hurdle', width: 8, height: 6 },
         { id: '5sgoal', type: 'equipment' as const, variant: '5sgoal', label: 'S Goal Post', width: 15, height: 8 },
         { id: 'goalpost', type: 'equipment' as const, variant: 'goalpost', label: 'Goal Post', width: 20, height: 6 },
         { id: 'vladder', type: 'equipment' as const, variant: 'vladder', label: 'V-Ladder', width: 15, height: 5 },
@@ -765,7 +766,7 @@ const DrillDesignerPage = () => {
                                             </svg>
 
                                         )}
-                                        {el.variant === 'hurdle' && (
+                                        {el.variant === 'h_hurdle' && (
                                             <svg width="2em" height="2em" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"
                                                 fill={el.color}
                                             >
@@ -773,10 +774,22 @@ const DrillDesignerPage = () => {
                                                 <rect x="14" y="30" width="2" height="20" rx="2" />
                                                 {/* <!--Right stand--> */}
                                                 <rect x="48" y="30" width="2" height="20" rx="2" />
-                                                {/* <!--Cross bar (hurdle)--> */}
+                                                {/* <!--Cross bar (h_hurdle)--> */}
                                                 <rect x="12" y="28" width="40" height="4" rx="2" />
                                             </svg>
-                                            // <div className="w-full h-2/3 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: el.color }}></div>
+                                          )}
+                                          {el.variant === 'v_hurdle' && (
+                                            <svg width="2em" height="2em" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" 
+                                            fill={el.color}>
+                                                <g transform="rotate(90 35 35)">
+                                                    {/* Left stand */}
+                                                    <rect x="14" y="30" width="2" height="20" rx="2" />
+                                                    {/* Right stand */}
+                                                    <rect x="48" y="30" width="2" height="20" rx="2" />
+                                                    {/* Cross bar */}
+                                                    <rect x="12" y="28" width="40" height="4" rx="2" />
+                                                </g>
+                                            </svg>
                                         )}
                                         {el.variant === '5sgoal' && (
                                             <svg
@@ -1285,8 +1298,26 @@ const DrillDesignerPage = () => {
                                                 <rect x="31" y="8" width="2" height="44" rx="2" />
                                             </svg>
                                         )}
-                                        {draggedAsset.variant === 'hurdle' && (
-                                            <div className="w-12 h-8 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: selectedColor }}></div>
+                                        {draggedAsset.variant === 'h_hurdle' && (
+                                            <svg className="w-16 h-16" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"
+                                                fill={selectedColor}
+                                            >
+                                                {/* <!--Left stand--> */}
+                                                <rect x="14" y="30" width="2" height="20" rx="2" />
+                                                {/* <!--Right stand--> */}
+                                                <rect x="48" y="30" width="2" height="20" rx="2" />
+                                                {/* <!--Cross bar (h_hurdle)--> */}
+                                                <rect x="12" y="28" width="40" height="4" rx="2" />
+                                            </svg>
+                                        )}
+                                        {draggedAsset.variant === 'v_hurdle' && (
+                                            <svg viewBox="0 0 64 64" className="w-16 h-16" fill={selectedColor}>
+                                                <g transform="rotate(90 35 35)">
+                                                    <rect x="14" y="30" width="2" height="20" rx="2" />
+                                                    <rect x="48" y="30" width="2" height="20" rx="2" />
+                                                    <rect x="12" y="28" width="40" height="4" rx="2" />
+                                                </g>
+                                            </svg>
                                         )}
                                         {draggedAsset.variant === '5sgoal' && (
                                             <svg viewBox="0 0 64 64" className="w-12 h-8" fill={'#000000'}>
@@ -1549,8 +1580,26 @@ const DrillDesignerPage = () => {
                                                     <rect x="31" y="8" width="2" height="44" rx="2" />
                                                 </svg>
                                             )}
-                                            {asset.variant === 'hurdle' && (
-                                                <div className="w-10 h-6 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: selectedColor }}></div>
+                                            {asset.variant === 'h_hurdle' && (
+                                                <svg className="w-16 h-16" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"
+                                                fill={selectedColor}
+                                            >
+                                                {/* <!--Left stand--> */}
+                                                <rect x="14" y="30" width="2" height="20" rx="2" />
+                                                {/* <!--Right stand--> */}
+                                                <rect x="48" y="30" width="2" height="20" rx="2" />
+                                                {/* <!--Cross bar (h_hurdle)--> */}
+                                                <rect x="12" y="28" width="40" height="4" rx="2" />
+                                            </svg>
+                                            )}
+                                            {asset.variant === 'v_hurdle' && (
+                                                <svg viewBox="0 0 64 64" className="w-16 h-16" fill={selectedColor}>
+                                                    <g transform="rotate(90 35 35)">
+                                                        <rect x="14" y="30" width="2" height="20" rx="2" />
+                                                        <rect x="48" y="30" width="2" height="20" rx="2" />
+                                                        <rect x="12" y="28" width="40" height="4" rx="2" />
+                                                    </g>
+                                                </svg>
                                             )}
                                             {asset.variant === '5sgoal' && (
                                                 <svg viewBox="0 0 64 64" className="w-fit h-fit" >
