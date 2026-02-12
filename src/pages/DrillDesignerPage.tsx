@@ -45,7 +45,7 @@ const COLORS = [
     { id: 'blue', value: '#3b82f6', label: 'Blue' },
     { id: 'yellow', value: '#fbbf24', label: 'Yellow' },
     { id: 'red', value: '#ef4444', label: 'Red' },
-    { id: 'black', value: '#000000', label: 'Black' },
+    { id: 'black', value: '#0e0d0dff', label: 'Black' },
     { id: 'white', value: '#ffffff', label: 'White' },
 ];
 
@@ -60,12 +60,13 @@ const ASSETS = {
     equipment: [
         { id: 'ball', type: 'icon' as const, icon: '⚽', label: 'Ball', fixedColor: true, width: 0.25, height: 0.25 },
         { id: 'cone', type: 'equipment' as const, variant: 'cone', label: 'Cone', width: 4, height: 4 },
-        { id: 'marker', type: 'equipment' as const, variant: 'marker', label: 'Disc', width: 4, height: 4 },
+        { id: 'marker', type: 'equipment' as const, variant: 'marker', label: 'Shade', width: 4, height: 4 },
         { id: 'pole', type: 'equipment' as const, variant: 'pole', label: 'Pole', width: 3, height: 4 },
         { id: 'hurdle', type: 'equipment' as const, variant: 'hurdle', label: 'Hurdle', width: 8, height: 6 },
         { id: '5sgoal', type: 'equipment' as const, variant: '5sgoal', label: 'S Goal Post', width: 15, height: 8 },
-        { id: 'minigoal', type: 'equipment' as const, variant: 'minigoal', label: 'Goal Post', width: 20, height: 6 },
-        { id: 'ladder', type: 'equipment' as const, variant: 'ladder', label: 'Ladder', width: 15, height: 5 },
+        { id: 'goalpost', type: 'equipment' as const, variant: 'goalpost', label: 'Goal Post', width: 20, height: 6 },
+        { id: 'vladder', type: 'equipment' as const, variant: 'vladder', label: 'V-Ladder', width: 15, height: 5 },
+        { id: 'hladder', type: 'equipment' as const, variant: 'hladder', label: 'H-Ladder', width: 15, height: 5 },
     ],
     shapes: [
         { id: 'square', type: 'shape' as const, variant: 'square', label: 'Square', width: 10, height: 10 },
@@ -720,7 +721,7 @@ const DrillDesignerPage = () => {
 
                                 {/* Render Icon (Ball) */}
                                 {el.type === 'icon' && (
-                                    <span className="text-[0.4rem]">{el.icon}</span>
+                                    <span className="text-[0.6rem]">{el.icon}</span>
                                 )}
 
                                 {/* Render Equipment */}
@@ -780,7 +781,7 @@ const DrillDesignerPage = () => {
                                                 height="2em"
                                                 viewBox="0 0 64 64"
                                                 xmlns="http://www.w3.org/2000/svg"
-                                                fill={el.color}
+                                                fill={'#000000'}
                                             >
                                                 {/* Left post */}
                                                 <rect x="14" y="22" width="3" height="20" rx="1.5" />
@@ -799,13 +800,10 @@ const DrillDesignerPage = () => {
                                                 <rect x="40" y="25" width="0.8" height="14" opacity="0.5" />
                                             </svg>
                                         )}
-                                        {el.variant === 'minigoal' && (
-                                            // <div className="w-full h-full border-2 relative" style={{ borderColor: el.color }}>
-                                            //     <div className="w-full h-full border border-dashed border-current opacity-50"></div>
-                                            // </div>
+                                        {el.variant === 'goalpost' && (
                                             <svg
-                                                width="em"
-                                                height="2em"
+                                                width="3em"
+                                                height="3em"
                                                 viewBox="0 0 256 256"
                                                 xmlns="http://www.w3.org/2000/svg"
                                             >
@@ -819,7 +817,7 @@ const DrillDesignerPage = () => {
                                                 <rect x="24" y="88" width="208" height="12" rx="6" />
 
                                                 {/* <!-- Net (horizontal lines) --> */}
-                                                <rect x="24" y="108" width="208" height="3.2" opacity="0.6" />
+                                                <rect x="24" y="108" width="2" height="3.2" opacity="0.6" />
                                                 <rect x="24" y="124" width="208" height="3.2" opacity="0.6" />
                                                 <rect x="24" y="140" width="208" height="3.2" opacity="0.6" />
                                                 <rect x="24" y="156" width="208" height="3.2" opacity="0.6" />
@@ -832,22 +830,28 @@ const DrillDesignerPage = () => {
                                             </svg>
 
                                         )}
-                                        {el.variant === 'ladder' && (
-                                            // <div className="w-full h-full flex border-y-2" style={{ borderColor: el.color }}>
-                                            //     <div className="flex-1 border-r-2 border-current"></div>
-                                            //     <div className="flex-1 border-r-2 border-current"></div>
-                                            //     <div className="flex-1"></div>
-                                            // </div>
+                                        {el.variant === 'vladder' && (
                                             <svg className="w-full h-full" viewBox="14 6 14 46" xmlns="http://www.w3.org/2000/svg">
                                                 {/* <!--Side rails--> */}
-                                                <rect x="16" y="8" width="2" height="48" rx="2" fill={el.color} />
-                                                <rect x="30" y="8" width="2" height="48" rx="2" fill={el.color} />
+                                                <rect x="16" y="8" width="3" height="48" rx="2" fill={el.color} />
+                                                <rect x="30" y="8" width="3" height="48" rx="2" fill={el.color} />
                                                 {/* <!--Rungs (3 bars)--> */}
-                                                <rect x="17" y="16" width="15" height="2" rx="2" fill="#DADADA" />
-                                                <rect x="17" y="30" width="15" height="2" rx="2" fill="#DADADA" />
-                                                <rect x="17" y="44" width="15" height="2" rx="2" fill="#DADADA" />
+                                                <rect x="17" y="16" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                <rect x="17" y="30" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                <rect x="17" y="44" width="15" height="2" rx="2" fill="#0e0d0dff" />
                                             </svg>
+                                        )}
+                                        {el.variant === 'hladder' && (
+                                            <svg className="w-full h-full" viewBox="0 0 80 50" xmlns="http://www.w3.org/2000/svg">
+                                                <g transform="translate(0 5) rotate(90 37 33)">
+                                                    <rect x="16" y="8" width="3" height="48" rx="2" fill={el.color} />
+                                                    <rect x="30" y="8" width="3" height="48" rx="2" fill={el.color} />
 
+                                                    <rect x="17" y="16" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                    <rect x="17" y="30" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                    <rect x="17" y="44" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                </g>
+                                            </svg>
                                         )}
                                     </div>
                                 )}
@@ -1282,7 +1286,7 @@ const DrillDesignerPage = () => {
                                             <div className="w-12 h-8 border-t-4 border-x-4 rounded-t-lg" style={{ borderColor: selectedColor }}></div>
                                         )}
                                         {draggedAsset.variant === '5sgoal' && (
-                                            <svg viewBox="0 0 64 64" className="w-12 h-8" fill={selectedColor}>
+                                            <svg viewBox="0 0 64 64" className="w-12 h-8" fill={'#000000'}>
                                                 {/* Left post */}
                                                 <rect x="14" y="22" width="3" height="20" rx="1.5" />
                                                 {/* Right post */}
@@ -1300,17 +1304,57 @@ const DrillDesignerPage = () => {
                                                 <rect x="40" y="25" width="0.8" height="14" opacity="0.5" />
                                             </svg>
                                         )}
-                                        {draggedAsset.variant === 'minigoal' && (
-                                            <div className="w-12 h-8 border-2" style={{ borderColor: selectedColor }}>
-                                                <div className="w-full h-full border border-dashed border-current opacity-50"></div>
-                                            </div>
+                                        {draggedAsset.variant === 'goalpost' && (
+                                            <svg
+                                                width="em"
+                                                height="2em"
+                                                viewBox="0 0 256 256"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                {/* <!-- Left post --> */}
+                                                <rect x="24" y="88" width="12" height="96" rx="6" />
+
+                                                {/* <!-- Right post --> */}
+                                                <rect x="220" y="88" width="12" height="96" rx="6" />
+
+                                                {/* <!-- Crossbar --> */}
+                                                <rect x="24" y="88" width="208" height="12" rx="6" />
+
+                                                {/* <!-- Net (horizontal lines) --> */}
+                                                <rect x="24" y="108" width="208" height="3.2" opacity="0.6" />
+                                                <rect x="24" y="124" width="208" height="3.2" opacity="0.6" />
+                                                <rect x="24" y="140" width="208" height="3.2" opacity="0.6" />
+                                                <rect x="24" y="156" width="208" height="3.2" opacity="0.6" />
+                                                <rect x="24" y="172" width="208" height="3.2" opacity="0.6" />
+
+                                                {/* <!-- Net (vertical hints) --> */}
+                                                <rect x="64" y="100" width="3.2" height="84" opacity="0.5" />
+                                                <rect x="128" y="100" width="3.2" height="84" opacity="0.5" />
+                                                <rect x="192" y="100" width="3.2" height="84" opacity="0.5" />
+                                            </svg>
                                         )}
-                                        {draggedAsset.variant === 'ladder' && (
-                                            <div className="w-12 h-6 flex border-y-2" style={{ borderColor: selectedColor }}>
-                                                <div className="flex-1 border-r-2 border-current"></div>
-                                                <div className="flex-1 border-r-2 border-current"></div>
-                                                <div className="flex-1"></div>
-                                            </div>
+                                        {draggedAsset.variant === 'vladder' && (
+                                            <svg className="w-13 h-13" viewBox="14 6 14 46" xmlns="http://www.w3.org/2000/svg">
+                                                {/* <!--Side rails--> */}
+                                                <rect x="16" y="8" width="3" height="48" rx="2" fill={selectedColor} />
+                                                <rect x="30" y="8" width="3" height="48" rx="2" fill={selectedColor} />
+                                                {/* <!--Rungs (3 bars)--> */}
+                                                <rect x="17" y="16" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                <rect x="17" y="30" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                <rect x="17" y="44" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                            </svg>
+                                        )}
+                                        {draggedAsset.variant === 'hladder' && (
+                                            <svg className="w-full h-full" viewBox="0 0 80 50" xmlns="http://www.w3.org/2000/svg">
+                                                <g transform="translate(0 5) rotate(90 37 33)">
+                                                    <rect x="16" y="8" width="3" height="48" rx="2" fill={selectedColor} />
+                                                    <rect x="30" y="8" width="3" height="48" rx="2" fill={selectedColor} />
+
+                                                    <rect x="17" y="16" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                    <rect x="17" y="30" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                    <rect x="17" y="44" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                </g>
+                                            </svg>
                                         )}
                                     </div>
                                 )}
@@ -1357,7 +1401,7 @@ const DrillDesignerPage = () => {
 
                     {/* Color Picker */}
                     {!isViewMode && (
-                        <div className="px-4 py-2 border-b border-white/10 bg-[#121212] flex justify-between">
+                        <div className="px-4 py-2 border-b border-white/10 bg-[#282828] flex justify-between">
                             <div className="flex items-center gap-2">
                                 <span className="text-xs text-zinc-400 font-semibold uppercase">Color:</span>
                                 <div className="flex gap-2">
@@ -1524,7 +1568,7 @@ const DrillDesignerPage = () => {
                                                     <rect x="40" y="25" width="0.8" height="14" opacity="0.5" />
                                                 </svg>
                                             )}
-                                            {asset.variant === 'minigoal' && (
+                                            {asset.variant === 'goalpost' && (
                                                 // <div className="w-10 h-6 border-2" style={{ borderColor: selectedColor }}>
                                                 //     <div className="w-full h-full border border-dashed border-current opacity-50"></div>
                                                 // </div>
@@ -1555,12 +1599,28 @@ const DrillDesignerPage = () => {
                                                     <rect x="192" y="100" width="3.2" height="84" opacity="0.5" />
                                                 </svg>
                                             )}
-                                            {asset.variant === 'ladder' && (
-                                                <div className="w-10 h-4 flex border-y-2" style={{ borderColor: selectedColor }}>
-                                                    <div className="flex-1 border-r-2 border-current"></div>
-                                                    <div className="flex-1 border-r-2 border-current"></div>
-                                                    <div className="flex-1"></div>
-                                                </div>
+                                            {asset.variant === 'vladder' && (
+                                                <svg className="w-13 h-13" viewBox="14 6 14 46" xmlns="http://www.w3.org/2000/svg">
+                                                    {/* <!--Side rails--> */}
+                                                    <rect x="16" y="8" width="3" height="48" rx="2" fill={selectedColor} />
+                                                    <rect x="30" y="8" width="3" height="48" rx="2" fill={selectedColor} />
+                                                    {/* <!--Rungs (3 bars)--> */}
+                                                    <rect x="17" y="16" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                    <rect x="17" y="30" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                    <rect x="17" y="44" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                </svg>
+                                            )}
+                                            {asset.variant === 'hladder' && (
+                                                <svg className="w-full h-full" viewBox="0 0 80 50" xmlns="http://www.w3.org/2000/svg">
+                                                    <g transform="translate(0 5) rotate(90 37 33)">
+                                                        <rect x="16" y="8" width="3" height="48" rx="2" fill={selectedColor} />
+                                                        <rect x="30" y="8" width="3" height="48" rx="2" fill={selectedColor} />
+
+                                                        <rect x="17" y="16" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                        <rect x="17" y="30" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                        <rect x="17" y="44" width="15" height="2" rx="2" fill="#0e0d0dff" />
+                                                    </g>
+                                                </svg>
                                             )}
                                         </div>
                                     )}
