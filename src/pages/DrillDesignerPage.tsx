@@ -416,8 +416,48 @@ const DrillDesignerPage = () => {
         setDrawingShapeType(null); // Deactivate drawing mode after creating shape
     };
 
-
-
+    // Helper: draw a small detached V-shaped arrowhead at the end of a points array
+    const renderArrowV = (
+        pts: { x: number; y: number }[],
+        stroke: string,
+        strokeWidth: number,
+        key: string | number
+    ) => {
+        if (pts.length < 2) return null;
+        const tip = pts[pts.length - 1];
+        const prev = pts[pts.length - 2];
+        const dx = tip.x - prev.x;
+        const dy = tip.y - prev.y;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len === 0) return null;
+        const ux = dx / len; // unit vector along line direction
+        const uy = dy / len;
+        // V size: scaled to 60% larger than initial size
+        const armLen = 11.2;
+        const halfW = 4.48; // half-width of V opening
+        // Gap between line end and V tip
+        const gap = 6.4;
+        // Arrow tip position (slightly beyond line end)
+        const tx = tip.x + ux * gap;
+        const ty = tip.y + uy * gap;
+        // Left and right arms (perpendicular + backward components)
+        const lx = tx - ux * armLen - uy * halfW;
+        const ly = ty - uy * armLen + ux * halfW;
+        const rx = tx - ux * armLen + uy * halfW;
+        const ry = ty - uy * armLen - ux * halfW;
+        return (
+            <polyline
+                key={`arrow-${key}`}
+                points={`${lx},${ly} ${tx},${ty} ${rx},${ry}`}
+                fill="none"
+                stroke={stroke}
+                strokeWidth={strokeWidth * 0.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="pointer-events-none"
+            />
+        );
+    };
 
     if (!currentStep) return <div>Loading...</div>;
 
@@ -777,10 +817,10 @@ const DrillDesignerPage = () => {
                                                 {/* <!--Cross bar (h_hurdle)--> */}
                                                 <rect x="12" y="28" width="40" height="4" rx="2" />
                                             </svg>
-                                          )}
-                                          {el.variant === 'v_hurdle' && (
-                                            <svg width="2em" height="2em" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" 
-                                            fill={el.color}>
+                                        )}
+                                        {el.variant === 'v_hurdle' && (
+                                            <svg width="2em" height="2em" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"
+                                                fill={el.color}>
                                                 <g transform="rotate(90 35 35)">
                                                     {/* Left stand */}
                                                     <rect x="14" y="30" width="2" height="20" rx="2" />
@@ -912,11 +952,6 @@ const DrillDesignerPage = () => {
 
                     {/* Render Lines as SVG Paths */}
                     <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${pitchWidth} ${pitchHeight}`}>
-                        <defs>
-                            <marker id="arrowhead-line" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-                                <polyline points="1,1 7,4 1,7" fill="none" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </marker>
-                        </defs>
 
                         {/* Render completed lines */}
                         {elements.filter(el => el.type === 'line').map((line) => {
@@ -1008,9 +1043,9 @@ const DrillDesignerPage = () => {
                                             fill="none"
                                             stroke="#000000"
                                             strokeWidth={isSelected ? "4" : "3"}
-                                            markerEnd="url(#arrowhead-line)"
                                             className="pointer-events-none"
                                         />
+                                        {renderArrowV(wavePoints, '#000000', isSelected ? 4 : 3, `${line.instanceId}-arrowV`)}
                                     </>
                                 );
                             } else if (line.drawMode === 'freehand') {
@@ -1043,9 +1078,9 @@ const DrillDesignerPage = () => {
                                             stroke="#000000"
                                             strokeWidth={isSelected ? "4" : "3"}
                                             strokeDasharray={line.lineStyle === 'dotted' ? '5,5' : 'none'}
-                                            markerEnd="url(#arrowhead-line)"
                                             className="pointer-events-none"
                                         />
+                                        {renderArrowV(points, '#000000', isSelected ? 4 : 3, `${line.instanceId}-arrowV`)}
                                     </>
                                 );
                             } else {
@@ -1083,9 +1118,9 @@ const DrillDesignerPage = () => {
                                             stroke="#000000"
                                             strokeWidth={isSelected ? "4" : "3"}
                                             strokeDasharray={line.lineStyle === 'dotted' ? '5,5' : 'none'}
-                                            markerEnd="url(#arrowhead-line)"
                                             className="pointer-events-none"
                                         />
+                                        {renderArrowV([start, end], '#000000', isSelected ? 4 : 3, `${line.instanceId}-arrowV`)}
                                     </>
                                 );
                             }
@@ -1149,43 +1184,49 @@ const DrillDesignerPage = () => {
                                     }
 
                                     return (
-                                        <path
-                                            d={pathData}
-                                            fill="none"
-                                            stroke="#000000"
-                                            strokeWidth="3"
-                                            markerEnd="url(#arrowhead-line)"
-                                            opacity={0.7}
-                                        />
+                                        <>
+                                            <path
+                                                d={pathData}
+                                                fill="none"
+                                                stroke="#000000"
+                                                strokeWidth="3"
+                                                opacity={0.7}
+                                            />
+                                            {renderArrowV(wavePoints, '#000000', 3, 'live-dribble')}
+                                        </>
                                     );
                                 } else if (selectedLineType.drawMode === 'freehand') {
                                     const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
                                     return (
-                                        <path
-                                            d={pathData}
-                                            fill="none"
-                                            stroke="#000000"
-                                            strokeWidth="3"
-                                            strokeDasharray={selectedLineType.lineStyle === 'dotted' ? '5,5' : 'none'}
-                                            markerEnd="url(#arrowhead-line)"
-                                            opacity={0.7}
-                                        />
+                                        <>
+                                            <path
+                                                d={pathData}
+                                                fill="none"
+                                                stroke="#000000"
+                                                strokeWidth="3"
+                                                strokeDasharray={selectedLineType.lineStyle === 'dotted' ? '5,5' : 'none'}
+                                                opacity={0.7}
+                                            />
+                                            {renderArrowV(points, '#000000', 3, 'live-freehand')}
+                                        </>
                                     );
                                 } else {
                                     const start = points[0];
                                     const end = points[points.length - 1];
                                     return (
-                                        <line
-                                            x1={start.x}
-                                            y1={start.y}
-                                            x2={end.x}
-                                            y2={end.y}
-                                            stroke="#000000"
-                                            strokeWidth="3"
-                                            strokeDasharray={selectedLineType.lineStyle === 'dotted' ? '5,5' : 'none'}
-                                            markerEnd="url(#arrowhead-line)"
-                                            opacity={0.7}
-                                        />
+                                        <>
+                                            <line
+                                                x1={start.x}
+                                                y1={start.y}
+                                                x2={end.x}
+                                                y2={end.y}
+                                                stroke="#000000"
+                                                strokeWidth="3"
+                                                strokeDasharray={selectedLineType.lineStyle === 'dotted' ? '5,5' : 'none'}
+                                                opacity={0.7}
+                                            />
+                                            {renderArrowV([start, end], '#000000', 3, 'live-straight')}
+                                        </>
                                     );
                                 }
                             })()
@@ -1582,15 +1623,15 @@ const DrillDesignerPage = () => {
                                             )}
                                             {asset.variant === 'h_hurdle' && (
                                                 <svg className="w-16 h-16" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"
-                                                fill={selectedColor}
-                                            >
-                                                {/* <!--Left stand--> */}
-                                                <rect x="14" y="30" width="2" height="20" rx="2" />
-                                                {/* <!--Right stand--> */}
-                                                <rect x="48" y="30" width="2" height="20" rx="2" />
-                                                {/* <!--Cross bar (h_hurdle)--> */}
-                                                <rect x="12" y="28" width="40" height="4" rx="2" />
-                                            </svg>
+                                                    fill={selectedColor}
+                                                >
+                                                    {/* <!--Left stand--> */}
+                                                    <rect x="14" y="30" width="2" height="20" rx="2" />
+                                                    {/* <!--Right stand--> */}
+                                                    <rect x="48" y="30" width="2" height="20" rx="2" />
+                                                    {/* <!--Cross bar (h_hurdle)--> */}
+                                                    <rect x="12" y="28" width="40" height="4" rx="2" />
+                                                </svg>
                                             )}
                                             {asset.variant === 'v_hurdle' && (
                                                 <svg viewBox="0 0 64 64" className="w-16 h-16" fill={selectedColor}>
